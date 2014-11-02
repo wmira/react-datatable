@@ -1,7 +1,7 @@
 'use strict';
 var React = require("react");
 
-var RDT = require("./rdt.jsx");
+var RDT = require("./react-datatable/rdt.jsx");
 
 
 var data = [

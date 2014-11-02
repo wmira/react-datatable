@@ -21,7 +21,6 @@ var TABLE_CSS = {
     }
 }
 
-
 /**
  * Simple Data Table using react.
  *
