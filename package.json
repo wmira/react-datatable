@@ -1,6 +1,6 @@
 {
   "name": "sdt",
-  "description": "Simple Data Table",
+  "description": "Data Table written in React view framework",
   "dependencies": {
     "browserify": "*",
     "gulp": "*",
