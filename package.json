@@ -7,7 +7,7 @@
   },
   "author": "Warren Mira",
   "license": "MIT",
-  "main": "dist/react-datatable.js",
+  "main": "dist/js/react-datatable.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/wmira/react-datatable"
