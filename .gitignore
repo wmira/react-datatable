@@ -1,0 +1,4 @@
+dev/*
+node_modules/
+.idea/
+

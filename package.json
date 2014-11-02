@@ -1,0 +1,16 @@
+{
+  "name": "sdt",
+  "description": "Simple Data Table",
+  "dependencies": {
+    "browserify": "*",
+    "gulp": "*",
+    "react": "*",
+    "del": "*",
+    "reactify": "*"
+  },
+  "devDependencies": {
+    "gulp-changed": "^1.0.0",
+    "vinyl-source-stream": "^1.0.0",
+    "browser-sync": "^1.6.2"
+  }
+}
