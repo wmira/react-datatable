@@ -11,6 +11,7 @@ var browserSync = require("browser-sync");
 // Define some paths.
 var paths = {
     rdt: ['./src/js/react-datatable/rdt.jsx'],
+    jsx: ['./src/js/react-datatable/*.jsx'],
     js: ['./src/js/index.js']
 };
 var staticPaths = ['./src/*.html', './src/css/*.css'];
@@ -56,6 +57,7 @@ gulp.task('js', function () {
 gulp.task('watch', function () {
     gulp.watch(staticPaths[0], ['static', browserSync.reload]);
     gulp.watch(staticPaths[1], ['static', browserSync.reload]);
+    gulp.watch(paths.jsx, ['js', browserSync.reload]);
     gulp.watch(paths.js, ['js', browserSync.reload]);
 
 });

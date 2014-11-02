@@ -1,6 +1,7 @@
 /** @jsx React.DOM */
 var React = require('react');
 
+var RDTCell = require('./cell.jsx');
 
 /**
  * React Component as a row
@@ -21,7 +22,8 @@ var RDTRow = React.createClass({
             <tr  data-index={this.props.index}> {
                     cols.map(function (col) {
                         //FIXME, we need to parse the path to make it work for nested objects
-                        return <td data-property={col.property} key={col.property}>{data[col.property]}</td>
+                        //return <td data-property={col.property} key={col.property}>{data[col.property]}</td>
+                        return <RDTCell property={col.property} record={data}/>
                     })
                 }
 

@@ -20,7 +20,6 @@ var TABLE_CSS = {
     }
 }
 
-
 /**
  * Simple Data Table using react.
  *
@@ -33,7 +32,7 @@ var TABLE_CSS = {
  *  var config = {
  *      style : 'pure',
  *       cols : [
- *           { key: "firstname" , header: "First Name"  }
+ *           { editable: true, property: "path" , header: "First Name"  }
         ]
     };
  *
@@ -48,10 +47,12 @@ var RDT = React.createClass({
     /**
      * React id here contains the actual aid
      *
+     * TODO: we should have 2 clicks to activate the editor. 1 will focus then edit
+     *
      * @param event
      * @param reactId
      */
-    clickHandler: function (event, reactId) {
+    /*clickHandler: function (event, reactId) {
         event.preventDefault();
         var element = event.target;
         var width = element.offsetWidth;
@@ -59,7 +60,6 @@ var RDT = React.createClass({
         var left = element.offsetLeft;
         var top = element.offsetTop;
 
-        //FIXME is there a way to do this cleanly?
         var parentTr = element.parentNode;
         var parentIdx = parentTr.dataset.index;
         //FIXME find a way to retrieve parent node in react, we need this to handle window clicks
@@ -91,24 +91,24 @@ var RDT = React.createClass({
             this.setState({editor: null});
         }
     },
-    /**
-     * Listen to click outside the document, so we can at least clear the editor if its active
-     */
+
     componentDidMount: function () {
         document.addEventListener('click', this.documentClickHandler);
     },
-
+     */
     render: function () {
         var tableStyle = TABLE_CSS[this.props.config.style];
         var config = this.props.config;
+
+        /*
         var editor = null;
         if (this.state.editor) {
             editor = <RDTEditor key="rdt-editor" editor={this.state.editor}/>
-        }
-        console.log("editor:" + editor);
+        }*/
+        //console.log("editor:" + editor);
         return (
             <div className="rdt-container" ref="container">
-                {editor}
+
                 <table className={tableStyle['table']}>
                     <RDTColumn config={config} />
                     <tbody onClick={this.clickHandler}>

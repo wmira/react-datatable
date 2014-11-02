@@ -39,17 +39,32 @@ var RDTEditor = React.createClass({
     },
 
     onInputChange: function (event) {
-        this.setState({value: event.target.value});
+        console.log("input change..");
+        //this.setState({value: event.target.value});
+    },
+
+    /**
+     * Listen to keyboard events
+     *
+     * @param event
+     */
+    onKeyUp : function(event) {
+        var keyCode = event.charCode;
+
+        if ( keyCode === 13 ) {
+            //update the value
+
+        }
     },
 
     render: function () {
 
         var inputStyle = this.state.inputStyle;
         var displayStyle = this.state.displayStyle;
-        console.log("value: " + this.state.value);
+
         return (
             <div  className="rdt-editor" style={displayStyle}>
-                <input ref="input" style={inputStyle} value={this.state.value} />
+                <input onKeyUp={this.onKeyUp} onChange={this.onInputChange} ref="input" style={inputStyle} defaultValue={this.state.value} />
             </div>
             );
 
