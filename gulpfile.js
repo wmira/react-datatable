@@ -45,12 +45,12 @@ gulp.task('rdt-build', function () {
 
 
 gulp.task('js', function () {
-    // Browserify/bundle the JS.
+
     return browserify(paths.js)
         .transform(reactify)
         .bundle()
         .pipe(source('react-datatable.js'))
-        .pipe(gulp.dest('./dist/'));
+        .pipe(gulp.dest('./dev/'));
 
 });
 

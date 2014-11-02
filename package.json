@@ -1,5 +1,5 @@
 {
-  "name": "sdt",
+  "name": "react-datatable",
   "version" : "0.0.1",
   "description": "Data Table written in React view framework",
   "dependencies": {
