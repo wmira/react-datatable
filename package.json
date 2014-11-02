@@ -1,14 +1,32 @@
 {
   "name": "sdt",
+  "version" : "0.0.1",
   "description": "Data Table written in React view framework",
   "dependencies": {
+    "react": "*"
+  },
+  "author": "Warren Mira",
+  "license": "MIT",
+  "main": "dist/react-datatable.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wmira/react-datatable"
+  },
+  "bugs": {
+    "url": "https://github.com/wmira/react-datatable/issues"
+  },
+  "homepage": "https://github.com/wmira/react-datatable",
+  "keywords": [
+    "react",
+    "react-component",
+    "datatable",
+    "datagrid"
+  ],
+  "devDependencies": {
     "browserify": "*",
     "gulp": "*",
-    "react": "*",
     "del": "*",
-    "reactify": "*"
-  },
-  "devDependencies": {
+    "reactify": "*",
     "gulp-changed": "^1.0.0",
     "vinyl-source-stream": "^1.0.0",
     "browser-sync": "^1.6.2"

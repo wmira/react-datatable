@@ -1,6 +1,5 @@
 /* gulpfile.js */
 
-// Load some modules which are installed through NPM.
 var gulp = require('gulp');
 var browserify = require('browserify');  // Bundles JS.
 var del = require('del');  // Deletes files.
@@ -13,7 +12,7 @@ var browserSync = require("browser-sync");
 // Define some paths.
 var paths = {
     // css: ['src/css/**/*.styl'],
-    app_js: ['./src/js/*.jsx'], // ['./src/js/row.jsx', './src/js/rdt.jsx', "./src/js/column.jsx"],
+    rdt: ['./src/js/rdt/rdt.jsx'],
     js: ['./src/js/index.js']
 };
 var staticPaths = ['./src/*.html', './src/css/*.css'];
@@ -33,32 +32,38 @@ gulp.task('browser-sync', function () {
         }
     });
 });
-// Our CSS task. It finds all our Stylus files and compiles them.
-/*gulp.task('css', ['clean'], function() {
- return gulp.src(paths.css)
- .pipe(stylus())
- .pipe(gulp.dest('./src/css'));
- });*/
 
-// Our JS task. It will Browserify our code and compile React JSX files.
+gulp.task('rdt-build', function () {
+    // Browserify/bundle the JS.
+    return browserify(paths.rdt)
+        .transform(reactify)
+        .bundle()
+        .pipe(source('react-datatable.js'))
+        .pipe(gulp.dest('./dist/'));
+
+});
+
+
 gulp.task('js', function () {
     // Browserify/bundle the JS.
     return browserify(paths.js)
         .transform(reactify)
         .bundle()
-        .pipe(source('bundle.js'))
+        .pipe(source('react-datatable.js'))
         .pipe(gulp.dest('./dist/'));
 
 });
 
-// Rerun tasks whenever a file changes.
-gulp.task('watch', function () {
-    //gulp.watch(paths.css, ['css']);
 
+gulp.task('watch', function () {
     gulp.watch(staticPaths[0], ['static', browserSync.reload]);
     gulp.watch(staticPaths[1], ['static', browserSync.reload]);
     gulp.watch(paths.js, ['js', browserSync.reload]);
     gulp.watch(paths.app_js, ['js', browserSync.reload]);
+});
+
+gulp.task('build',function() {
+
 });
 
 // The default task (called when we run `gulp` from cli)
