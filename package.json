@@ -1,6 +1,6 @@
 {
   "name": "react-datatable",
-  "version" : "0.0.1",
+  "version": "0.0.1",
   "description": "Data Table written in React view framework",
   "dependencies": {
     "react": "*"
@@ -29,6 +29,7 @@
     "reactify": "*",
     "gulp-changed": "^1.0.0",
     "vinyl-source-stream": "^1.0.0",
-    "browser-sync": "^1.6.2"
+    "browser-sync": "^1.6.2",
+    "numeral": "^1.5.3"
   }
 }

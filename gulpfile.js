@@ -44,7 +44,6 @@ gulp.task('rdt-build', function () {
 
 
 gulp.task('js', function () {
-
     return browserify(paths.js,{standalone: 'RDT'})
         .transform(reactify)
         .bundle()

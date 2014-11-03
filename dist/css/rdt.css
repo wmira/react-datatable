@@ -72,8 +72,5 @@
 
 .rdt-editor {
     position: absolute;
-}
-
-.rdt-editor input {
     box-sizing: border-box;
 }
