@@ -44,7 +44,7 @@ var RDTCell = React.createClass({
         if ( !this.state.isEditMode ) {
             this.setState( { record : this.state.record, property : this.state.property, editMode : true  } );
         }
-        //this.setState();
+
     },
 
     onKeyUp : function(event) {
@@ -56,6 +56,9 @@ var RDTCell = React.createClass({
             //update the value
             this.state.record[this.state.property] = this.refs.input.getDOMNode().value;
             this.setState( { record : this.state.record, property : this.state.property, editMode : false } );
+            if ( this.props.onCellUpdated ) {
+                this.props.onCellUpdated();
+            }
         }
 
     },
@@ -79,12 +82,21 @@ var RDTCell = React.createClass({
         var record = this.state.record;
         var property = this.state.property;
         var editMode = this.state.editMode;
-        var value = record[property];
+
+
+        var value = null;
+        if ( typeof property === 'string' ) {
+            value = record[property];
+        } else {
+            //FIXME assume its a function
+            value = property(record);
+
+        }
          //FIXME ensure its a function
         if ( this.props.col.formatter ) {
-            value = this.props.col.formatter(record[property],property,record);
+            value = this.props.col.formatter(value,property,record);
         }
-        console.log("value: " + value);
+
         var editor = null;
         if ( editMode && editable   ) {
             editor = ( <input onKeyUp={this.onKeyUp} ref="input" onBlur={this.onBlur} className="rdt-editor" style={this.getDisplayStyle()} onKeyUp={this.onKeyUp} onChange={this.onInputChange} ref="input"  defaultValue={record[property]} /> );

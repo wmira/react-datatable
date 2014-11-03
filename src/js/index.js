@@ -23,8 +23,12 @@ var datasource = {
     data: data
 };
 
-var salaryFormatter = function(value,property,record) {
+var numberFormatter = function(value,property,record) {
     return "$" + numeral(value).format('0,0');
+};
+
+var computeTax = function(record) {
+    return  record['salary'] * 0.30;
 };
 
 var config = {
@@ -34,7 +38,8 @@ var config = {
         { property: "position", header: "Position"},
         { property: "office", header: "Office"},
         { property: "age", header: "Age"},
-        { editable: true, property: "salary", header: "Salary", formatter: salaryFormatter }
+        { property: computeTax, header: "Tax", formatter: numberFormatter},
+        { editable: true, property: "salary", header: "Salary", formatter: numberFormatter }
     ]
 };
 

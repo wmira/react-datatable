@@ -13,6 +13,9 @@ var RDTRow = React.createClass({
         return { data : this.props.data };
     },
 
+    onCellUpdated : function() {
+        this.setState( { data : this.props.data } ); //FIXME this should be record
+    },
     render: function() {
 
         var cols = this.props.config.cols;
@@ -24,8 +27,8 @@ var RDTRow = React.createClass({
                     cols.map(function (col) {
                         //FIXME, we need to parse the path to make it work for nested objects
                         //return <td data-property={col.property} key={col.property}>{data[col.property]}</td>
-                        return <RDTCell ds={ds} col={col} property={col.property} record={data}/>
-                    })
+                        return <RDTCell onCellUpdated={this.onCellUpdated} ds={ds} col={col} property={col.property} record={data}/>
+                    }.bind(this))
                 }
 
             </tr>
