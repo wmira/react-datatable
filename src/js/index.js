@@ -33,6 +33,11 @@ var computeTax = function(record) {
 
 var config = {
     style: 'pure',
+
+    pager: {
+        rowsPerPage: 2
+    },
+
     cols: [
         { editable: true, property: "name", header: "Name"  },
         { property: "position", header: "Position"},
@@ -43,11 +48,18 @@ var config = {
     ]
 };
 
-React.render(
-    React.createElement(RDT, {
-        config: config,
-        datasource: datasource
-    }),
+var rdt = React.createElement(RDT, {
+    config: config,
+    datasource: datasource,
+    key: 'rdt'
+
+});
+
+
+
+window.rdtInstance = React.render(
+    rdt,
     document.getElementById('content')
 );
+
 

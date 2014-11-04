@@ -14,8 +14,8 @@ var RDTColumn = React.createClass({
         return(
             <thead>
                 <tr> {
-                    cols.map(function(col) {
-                        return <td>{col.header}</td>
+                    cols.map(function(col,idx) {
+                        return <td key={idx + 100}>{col.header}</td>
                     })
                 }
                 </tr>
