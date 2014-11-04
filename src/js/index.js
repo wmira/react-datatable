@@ -50,8 +50,7 @@ var config = {
 
 var rdt = React.createElement(RDT, {
     config: config,
-    datasource: datasource,
-    key: 'rdt'
+    datasource: datasource
 
 });
 
