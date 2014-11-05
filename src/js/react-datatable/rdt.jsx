@@ -44,9 +44,17 @@ var RDT = React.createClass({
     nextPage : function() {
         if ( this.pager ) {
             this.pager = this.pager.next();
-            this.setState({ pager : this.pager.state() });
+            this.setState({ pager : this.pager.state() , records : this.ds.records });
         }
+    },
 
+    add : function(record) {
+        this.datasource.records.push(record);
+        var pagerState = null;
+        if ( this.pager ) {
+            pagerState = this.pager.state()
+        }
+        return { pager : pagerState , records: this.ds.records };
     },
 
     getInitialState: function () {
@@ -54,9 +62,9 @@ var RDT = React.createClass({
         this.ds = new DataSource(this.props.config,this.props.datasource);
         if ( this.props.config.pager ) {
             this.pager = new Pager(1,this.props.config.pager.rowsPerPage,this.ds);
-            return { pager : this.pager.state() }
+            return { pager : this.pager.state() , records: this.ds.records }
         }
-        return { pager : null };
+        return { pager : null , records: this.ds.records };
     },
 
     pagerUpdated : function(page) {
@@ -83,7 +91,15 @@ var RDT = React.createClass({
                         <tbody>
                         {
                             this.ds.map(this.state.pager,function(data,idx,realIdx) {
-                                return  <RDTRow ds={this.ds} key={realIdx}  data={data} config={config} />
+
+                                //if this is a normal array map function, then realIdx here is the array
+                                //ths is why we do the check here
+                                //FIXME: we might want to move this
+                                var id = idx;
+                                if ( realIdx && !Array.isArray(realIdx)) {
+                                    id = realIdx;
+                                }
+                                return  <RDTRow ds={this.ds} key={id}  data={data} config={config} />
                             }.bind(this))
                         }
                         </tbody>

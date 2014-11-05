@@ -14,7 +14,8 @@ var Pager = function(page,rowsPerPage,datasource) {
     this.page = page;
     this.rowsPerPage = rowsPerPage;
     this.startIdx = (this.page - 1 ) * rowsPerPage;
-    this.endIdx = this.startIdx + this.rowsPerPage;
+    this.endIdx = ( this.startIdx + this.rowsPerPage ) < this.datasource.records.length ?
+        ( this.startIdx + this.rowsPerPage ) : ( this.startIdx + ( this.datasource.records.length - this.startIdx ));
 };
 
 
@@ -26,7 +27,7 @@ var Pager = function(page,rowsPerPage,datasource) {
  * @returns Pager
  */
 Pager.prototype.next = function() {
-    console.log("NEXT : " + this.page);
+
     return this.move(1);
 };
 
@@ -37,8 +38,16 @@ Pager.prototype.toPage = function(page) {
     return this.move(page - this.page);
 };
 
-Pager.prototype.move = function(movement) {
+Pager.prototype.maxPage= function() {
     var maxPage = parseInt(this.datasource.records.length / this.rowsPerPage);
+    if ( ( this.datasource.records.length % this.rowsPerPage ) > 0 ) {
+        maxPage += 1;
+    }
+    return maxPage;
+};
+
+Pager.prototype.move = function(movement) {
+    var maxPage = this.maxPage();
 
     if ( ( this.page + movement ) > maxPage  || ( this.page + movement ) < 0 ) {
         return this;

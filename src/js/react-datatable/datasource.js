@@ -41,6 +41,7 @@ DataSource.prototype.map = function(pageState,mapper) {
     var counter = 0;
 
     for ( var i = pageState.startIdx; i < pageState.endIdx; i++ ) {
+
         result.push(mapper(this.records[i],counter++,i));
     }
 

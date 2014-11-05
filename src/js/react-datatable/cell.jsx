@@ -13,6 +13,7 @@ var React = require('react');
 var RDTCell = React.createClass({
 
     getDisplayStyle : function() {
+
         var element = this.refs.td.getDOMNode();
         var width = element.offsetWidth;
         var height = element.offsetHeight;
@@ -76,6 +77,27 @@ var RDTCell = React.createClass({
         return { record : this.props.record, property : this.props.property, editMode : false  };
     },
 
+
+    createEditor : function() {
+
+    },
+
+    /**
+     *
+     *
+     * @returns {XML}
+     */
+    createEditor : function() {
+        var record = this.state.record;
+        var property = this.state.property;
+
+
+        return ( <input onKeyUp={this.onKeyUp} ref="input" onBlur={this.onBlur} className="rdt-editor"
+            style={this.getDisplayStyle()} onKeyUp={this.onKeyUp} onChange={this.onInputChange} ref="input"  defaultValue={record[property]} /> );
+    },
+
+
+
     render: function() {
 
         var editable = this.props.col.editable || false;
@@ -85,8 +107,16 @@ var RDTCell = React.createClass({
 
 
         var value = null;
+
+        /**
+         * If there is a resolve property, then this is probably a key.
+         * The resolve property points to a key/value list where we can use to lookup
+         * the value
+         *
+         */
         if ( typeof property === 'string' ) {
             value = record[property];
+            //TODO: resolve
         } else {
             //FIXME assume its a function
             value = property(record);
@@ -99,7 +129,7 @@ var RDTCell = React.createClass({
 
         var editor = null;
         if ( editMode && editable   ) {
-            editor = ( <input onKeyUp={this.onKeyUp} ref="input" onBlur={this.onBlur} className="rdt-editor" style={this.getDisplayStyle()} onKeyUp={this.onKeyUp} onChange={this.onInputChange} ref="input"  defaultValue={record[property]} /> );
+            editor = this.createEditor();
         }
         return (
             <td ref="td" onClick={this.onClickHandler} data-property={property} key={property}>

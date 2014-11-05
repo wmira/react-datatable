@@ -33,15 +33,19 @@ var Paginator = React.createClass({
 
         var pages = [];
         var maxPages = parseInt(this.props.datasource.records.length / this.props.config.pager.rowsPerPage);
+        if ( ( this.props.datasource.records.length % this.props.config.pager.rowsPerPage ) != 0 ) {
+            maxPages += 1;
+        }
         for ( var i=1; i <= maxPages; i++ ) {
             pages.push(i);
         }
+
         return(
             <div>
                 <select value={currentPage} ref="pageSelection" onChange={this.pageSelectionHandler}>
                 {
                     pages.map(function (pageNum) {
-                        return <option value={pageNum}>{pageNum}</option>
+                        return <option key={pageNum} value={pageNum}>{pageNum}</option>
                     })
                 }
                 </select>
