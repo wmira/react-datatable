@@ -47,7 +47,7 @@ var computeTax = function(record) {
 };
 
 var config = {
-    style: 'pure',
+    style: 'bootstrap',
 
 
     pager: {
