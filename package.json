@@ -1,6 +1,6 @@
 {
   "name": "react-datatable",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Data Table written in React view framework",
   "dependencies": {
   },
