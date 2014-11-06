@@ -3,9 +3,9 @@ var React = require('react');
 var DataSource = require("./datasource");
 var Pager = require("./pager");
 
-var RDTRow = require("./row.jsx");
-var RDTColumn = require("./column.jsx");
-var Paginator = require("./paginator.jsx");
+var RDTRow = require("./row");
+var RDTColumn = require("./column");
+var Paginator = require("./paginator");
 
 
 var TABLE_CSS = {

@@ -3,11 +3,10 @@
   "version": "0.0.2",
   "description": "Data Table written in React view framework",
   "dependencies": {
-    "react": "*"
   },
   "author": "Warren Mira",
   "license": "MIT",
-  "main": "dist/js/react-datatable.js",
+  "main": "dist/js/react-datatable/rdt.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/wmira/react-datatable"
@@ -23,13 +22,14 @@
     "datagrid"
   ],
   "devDependencies": {
+    "react": "*",
     "browserify": "*",
     "gulp": "*",
     "del": "*",
-    "reactify": "*",
     "gulp-changed": "^1.0.0",
     "vinyl-source-stream": "^1.0.0",
     "browser-sync": "^1.6.2",
-    "numeral": "^1.5.3"
+    "numeral": "^1.5.3",
+    "gulp-react": "^2.0.0"
   }
 }

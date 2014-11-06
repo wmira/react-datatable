@@ -1,7 +1,7 @@
 'use strict';
 var React = require("react");
 var numeral = require("numeral"); //FIX the build and separate this
-var RDT = require("./react-datatable/rdt.jsx");
+var RDT = require("../../dist/js/react-datatable/rdt.js");
 
 
 var data = [

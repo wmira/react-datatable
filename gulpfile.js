@@ -3,17 +3,16 @@
 var gulp = require('gulp');
 var browserify = require('browserify');  // Bundles JS.
 var del = require('del');  // Deletes files.
-var reactify = require('reactify');  // Transforms React JSX to JS.
+var react = require('gulp-react');
 var changed = require('gulp-changed');
 var source = require('vinyl-source-stream');
 var browserSync = require("browser-sync");
 
 // Define some paths.
 var paths = {
-    rdt: ['./src/js/react-datatable/rdt.jsx'],
-    jsx: ['./src/js/react-datatable/*.jsx'],
-    js: ['./src/js/index.js'],
-    js2: ['./src/js/react-datatable/*.js']
+    js: ['./src/js/react-datatable/*.js'],
+    jsdev: ['./src/js/dev.js']
+
 };
 var staticPaths = ['./src/*.html', './src/css/*.css'];
 
@@ -34,19 +33,16 @@ gulp.task('browser-sync', function () {
 });
 
 gulp.task('rdt-build', function () {
-    // Browserify/bundle the JS.
-    return browserify(paths.rdt,{standalone: 'RDT'})
-        .transform(reactify)
-        .bundle()
-        .pipe(source('react-datatable.js'))
-        .pipe(gulp.dest('./dist/js'));
+    return gulp.src(paths.js)
+        .pipe(react())
+        .pipe(gulp.dest('./dist/js/react-datatable'));
+
 
 });
 
 
-gulp.task('js', function () {
-    return browserify(paths.js,{standalone: 'RDT'})
-        .transform(reactify)
+gulp.task('js',['rdt-build'],function () {
+    return browserify(paths.jsdev)
         .bundle()
         .pipe(source('rdt-dev.js'))
         .pipe(gulp.dest('./dist/'));
@@ -57,9 +53,8 @@ gulp.task('js', function () {
 gulp.task('watch', function () {
     gulp.watch(staticPaths[0], ['static', browserSync.reload]);
     gulp.watch(staticPaths[1], ['static', browserSync.reload]);
-    gulp.watch(paths.jsx, ['js', browserSync.reload]);
     gulp.watch(paths.js, ['js', browserSync.reload]);
-    gulp.watch(paths.js2, ['js', browserSync.reload]);
+    gulp.watch(paths.jsdev, ['js', browserSync.reload]);
 
 });
 

@@ -1,13 +1,13 @@
 /** @jsx React.DOM */
 var React = require('react');
 
-var RDTCell = require('./cell.jsx');
+var RDTCell = require('./cell.js');
 
 /**
  * React Component as a row
  *
  */
-var RDTRow = React.createClass({
+var RDTRow = React.createClass({displayName: 'RDTRow',
 
     getInitialState: function() {
         return { data : this.props.data };
@@ -23,14 +23,14 @@ var RDTRow = React.createClass({
         var ds = this.props.ds;
 
         return (
-            <tr  data-index={this.props.index}>
-            {
+            React.createElement("tr", {'data-index': this.props.index}, 
+            
                 cols.map(function (col,idx) {
                     //FIXME, we need to parse the path to make it work for nested objects
-                    return <RDTCell key={idx} onCellUpdated={this.onCellUpdated} ds={ds} col={col} property={col.property} record={data}/>
+                    return React.createElement(RDTCell, {key: idx, onCellUpdated: this.onCellUpdated, ds: ds, col: col, property: col.property, record: data})
                 }.bind(this))
-            }
-            </tr>
+            
+            )
         )
 
     }
