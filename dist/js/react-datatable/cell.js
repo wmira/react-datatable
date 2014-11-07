@@ -45,7 +45,7 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
 
         var target = event.target;
 
-        if ( !this.state.isEditMode && this.props.editable ) {
+        if ( !this.state.editMode && this.props.col.editable ) {
             this.setState( { record : this.state.record, property : this.state.property, editMode : true  } );
         }
 
@@ -126,16 +126,13 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
          */
         if ( typeof property === 'string' ) {
             if ( !this.state.path ) {
-                console.log("path is not defined.." + property);
                 value = record[property];
             } else {
                 //TODO: support for nested objects
                 if ( typeof path === 'string' ) {
-                    console.log('string path');
                     value = record[path];
                 } else {
                     //TODO: function check
-                    console.log('funciton path');
                     value = path(property,record);
                 }
             }
