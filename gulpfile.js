@@ -7,6 +7,8 @@ var react = require('gulp-react');
 var changed = require('gulp-changed');
 var source = require('vinyl-source-stream');
 var browserSync = require("browser-sync");
+var es6transpiler = require('gulp-es6-transpiler');
+
 
 // Define some paths.
 var paths = {
@@ -35,6 +37,7 @@ gulp.task('browser-sync', function () {
 gulp.task('rdt-build', function () {
     return gulp.src(paths.js)
         .pipe(react())
+       // .pipe(es6transpiler())
         .pipe(gulp.dest('./dist/js/react-datatable'));
 
 

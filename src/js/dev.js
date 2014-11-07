@@ -42,7 +42,9 @@ var numberFormatter = function(value,property,record) {
     return "$" + numeral(value).format('0,0');
 };
 
-var computeTax = function(record) {
+var computeTax = function(property,record) {
+    console.log(property);
+    console.log(record);
     return  record['salary'] * 0.30;
 };
 
@@ -55,11 +57,12 @@ var config = {
     },
 
     cols: [
+        { property: "action", formatter : function(value,property,record,react) {return react.createElement("div",null,"Edit")}, clickHandler: function() { console.log("clicked") } },
         { editable: true, property: "name", header: "Name" },
         { property: "position", header: "Position"},
         { property: "office", resolve: "",  header: "Office" },
         { property: "age", header: "Age"},
-        { property: computeTax, header: "Tax", formatter: numberFormatter},
+        { property: "tax", path: computeTax, header: "Tax", formatter: numberFormatter},
         { editable: true, property: "salary", header: "Salary", formatter: numberFormatter }
     ]
 };
