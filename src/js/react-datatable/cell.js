@@ -126,16 +126,13 @@ var RDTCell = React.createClass({
          */
         if ( typeof property === 'string' ) {
             if ( !this.state.path ) {
-                console.log("path is not defined.." + property);
                 value = record[property];
             } else {
                 //TODO: support for nested objects
                 if ( typeof path === 'string' ) {
-                    console.log('string path');
                     value = record[path];
                 } else {
                     //TODO: function check
-                    console.log('funciton path');
                     value = path(property,record);
                 }
             }
