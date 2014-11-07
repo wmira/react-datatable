@@ -45,7 +45,7 @@ var RDTCell = React.createClass({
 
         var target = event.target;
 
-        if ( !this.state.isEditMode && this.props.editable ) {
+        if ( !this.state.editMode && this.props.col.editable ) {
             this.setState( { record : this.state.record, property : this.state.property, editMode : true  } );
         }
 
