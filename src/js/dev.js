@@ -43,8 +43,6 @@ var numberFormatter = function(value,property,record) {
 };
 
 var computeTax = function(property,record) {
-    console.log(property);
-    console.log(record);
     return  record['salary'] * 0.30;
 };
 
@@ -53,11 +51,11 @@ var config = {
 
 
     pager: {
-        rowsPerPage: 5
+      rowsPerPage: 5
     },
 
     cols: [
-        { property: "action", formatter : function(value,property,record,react) {return react.createElement("div",null,"Edit")}, clickHandler: function() { console.log("clicked") } },
+        { property: "action", header: "" , formatter : function(value,property,record,react) {return react.createElement("div",null,"Edit")}, clickHandler: function() { console.log("clicked") } },
         { editable: true, property: "name", header: "Name" },
         { property: "position", header: "Position"},
         { property: "office", resolve: "",  header: "Office" },
@@ -74,10 +72,8 @@ var rdt = React.createElement(RDT, {
 });
 
 
-
-window.rdtInstance = React.render(
+React.render(
     rdt,
     document.getElementById('content')
 );
-
 

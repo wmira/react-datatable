@@ -5,6 +5,7 @@ var Pager = require("./pager");
 
 var RDTRow = require("./row");
 var RDTColumn = require("./column");
+var RDTBody = require("./body");
 var Paginator = require("./paginator");
 
 
@@ -44,27 +45,30 @@ var RDT = React.createClass({
     nextPage : function() {
         if ( this.pager ) {
             this.pager = this.pager.next();
-            this.setState({ pager : this.pager.state() , records : this.ds.records });
+            this.setState({ pager : this.pager.state() });
         }
     },
 
     add : function(record) {
-        this.datasource.records.push(record);
+        this.ds.records.push(record);
         var pagerState = null;
         if ( this.pager ) {
             pagerState = this.pager.state()
         }
-        return { pager : pagerState , records: this.ds.records };
+
+        this.setState({ pager : pagerState });
     },
+
+
 
     getInitialState: function () {
 
         this.ds = new DataSource(this.props.config,this.props.datasource);
         if ( this.props.config.pager ) {
             this.pager = new Pager(1,this.props.config.pager.rowsPerPage,this.ds);
-            return { pager : this.pager.state() , records: this.ds.records }
+            return { pager : this.pager.state()  }
         }
-        return { pager : null , records: this.ds.records };
+        return { pager : null };
     },
 
     pagerUpdated : function(page) {
@@ -75,6 +79,7 @@ var RDT = React.createClass({
     },
 
     render: function () {
+
         var tableStyle = TABLE_CSS[this.props.config.style];
         var config = this.props.config;
 
@@ -88,22 +93,7 @@ var RDT = React.createClass({
                 <div className="rdt-container" ref="container">
                     <table className={tableStyle['table']}>
                         <RDTColumn config={config} />
-                        <tbody>
-                        {
-                            this.ds.map(this.state.pager,function(data,idx,realIdx) {
-
-                                //if this is a normal array map function, then realIdx here is the array
-                                //ths is why we do the check here
-                                //FIXME: we might want to move this
-                                var id = idx;
-                                if ( realIdx && !Array.isArray(realIdx)) {
-                                    id = realIdx;
-                                }
-                                return  <RDTRow ds={this.ds} key={id}  data={data} config={config} />
-                            }.bind(this))
-                        }
-                        </tbody>
-
+                        <RDTBody config={config} datasource={this.ds} pager={this.state.pager}/>
                     </table>
                 </div>
                 {paginator}
@@ -115,3 +105,22 @@ var RDT = React.createClass({
 
 
 module.exports = RDT;
+
+
+/*
+ <tbody>
+ {
+ this.ds.map(this.state.pager,function(data,idx,realIdx) {
+
+ //if this is a normal array map function, then realIdx here is the array
+ //ths is why we do the check here
+ //FIXME: we might want to move this
+ var id = idx;
+ if ( realIdx && !Array.isArray(realIdx)) {
+ id = realIdx;
+ }
+ return  <RDTRow ds={this.ds} key={id}  data={data} config={config} />
+ }.bind(this))
+ }
+ </tbody>
+ */

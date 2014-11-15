@@ -120,7 +120,7 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
 
         /**
          * By default, we will use record[property] if path is not given.
-         * If path is provided and is a string then will use record[path]
+         * If path is provided and is a string then will uspltle record[path]
          * If path is provided and is a function then we will call the function.
          * else we dont do anything
          */
@@ -130,7 +130,12 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
             } else {
                 //TODO: support for nested objects
                 if ( typeof path === 'string' ) {
-                    value = record[path];
+                    value =  path.split(".").reduce(function(previous,current) {
+                        if ( !previous || !current ) {
+                            return null;
+                        }
+                        return previous[current];
+                    },record);// record[path];
                 } else {
                     //TODO: function check
                     value = path(property,record);
