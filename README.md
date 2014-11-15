@@ -52,8 +52,9 @@ React.render(
 ```
 
 Column Attributes
- Attribute        | Description
-| ------------- |:-------------:|
+==================
+|Attribute      | Description |
+| ------------- |-------------|
 | property      | unique key to refer to the column |
 | path      | **optional** by default, the value is from record[property], if path is given then it is used. path can also be a function which can be used to create a dynamic cell      |
 | header | the column header      |
