@@ -12,6 +12,27 @@ var React = require('react');
  */
 var RDTCell = React.createClass({displayName: 'RDTCell',
 
+    /**
+     * problem is if this is null
+     *
+     * @param currentValue
+     * @param newValue
+     * @returns {*}
+     */
+    convertToType : function(currentValue,newValue) {
+        if ( (typeof currentValue) === "number" ) {
+            if ( currentValue % 1 === 0 ) {
+                return parseInt(newValue);
+            } else {
+                return parseFloat(newValue);
+            }
+        } else {
+            //assume it is a number for now
+            //FIXME do for other types, move to a function
+            return newValue;
+        }
+    },
+
     getDisplayStyle : function() {
 
         var element = this.refs.td.getDOMNode();
@@ -55,10 +76,12 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
 
         var type = event.type;
         var keyCode = event.which;
-
-        if ( type==='keyup' && keyCode === 13 && this.refs.input ) {
-            //update the value
-            this.state.record[this.state.property] = this.refs.input.getDOMNode().value;
+        var ENTER_KEY = 13;
+        if ( type==='keyup' && keyCode === ENTER_KEY && this.refs.input ) {
+            //should we let the flow update to the DS and DS let it flow down to child components?
+            //e.g. this.ds.update(key,id);
+            var newValue = this.convertToType(this.state.record[this.state.property],this.refs.input.getDOMNode().value);
+            this.state.record[this.state.property] = newValue;
             this.setState( { record : this.state.record, property : this.state.property, editMode : false } );
             if ( this.props.onCellUpdated ) {
                 this.props.onCellUpdated();
@@ -127,6 +150,9 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
         if ( typeof property === 'string' ) {
             if ( !this.state.path ) {
                 value = record[property];
+                if ( typeof(value) === 'function' ) {
+                    value = value();
+                }
             } else {
                 //TODO: support for nested objects
                 if ( typeof path === 'string' ) {
