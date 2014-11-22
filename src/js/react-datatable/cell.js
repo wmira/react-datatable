@@ -103,7 +103,7 @@ var RDTCell = React.createClass({
     },
 
     onBlur : function() {
-        this.setState(this.state);
+        this.setState({ editMode : false });
     },
 
     getInitialState: function() {
