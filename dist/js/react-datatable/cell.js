@@ -175,8 +175,6 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
 
         var value = this.getValue();
 
-
-
          //FIXME ensure its a function
         if ( this.props.col.formatter ) {
             value = this.props.col.formatter(value,property,record,React);
