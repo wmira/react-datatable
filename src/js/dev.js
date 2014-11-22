@@ -29,7 +29,7 @@ var data = [
     { name: 'Paul Byrd', position: 'Chief Financial Officer (CFO)', office: 'New York', age: 64, salary: 725000},
     { name: 'Quinn Flynn', position: 'Support Lead', office: 'Edinburgh', age: 22, salary: 342000},
 
-    { name: 'Rhona Davidson', position: 'Integration Specialist', office: 'Tokyo', age: 55, salary: 327900}
+    { name: 'Rhona Davidson', position: 'Integration Specialist', office: 'Tokyo', age: function(){return -99;}, salary: 327900}
 
 
 ];
@@ -59,7 +59,16 @@ var config = {
         { editable: true, property: "name", header: "Name" },
         { property: "position", header: "Position"},
         { property: "office", resolve: "",  header: "Office" },
-        { property: "age", header: "Age"},
+        { property: "age", header: "Age", editable: true, setter: function(newValue,property,config) {
+
+            console.log("age was set..");
+            if ( newValue <= 18 ) {
+                alert("Too young!");
+            } else {
+                this.age = newValue;
+            }
+
+        }},
         { property: "tax", path: computeTax, header: "Tax", formatter: numberFormatter},
         { editable: true, property: "salary", header: "Salary", formatter: numberFormatter }
     ]
@@ -67,7 +76,10 @@ var config = {
 
 var rdt = React.createElement(RDT, {
     config: config,
-    datasource: datasource
+    datasource: datasource,
+    onChange: function() {
+        console.log('hey was updated')
+    }
 
 });
 
@@ -76,4 +88,6 @@ React.render(
     rdt,
     document.getElementById('content')
 );
+
+
 
