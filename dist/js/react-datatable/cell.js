@@ -11,6 +11,9 @@ var React = require('react');
  *
  */
 var RDTCell = React.createClass({displayName: 'RDTCell',
+    componentWillReceiveProps : function(newProps) {
+
+    },
 
     /**
      * problem is if this is null
@@ -78,29 +81,33 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
         var keyCode = event.which;
         var ENTER_KEY = 13;
         if ( type==='keyup' && keyCode === ENTER_KEY && this.refs.input ) {
-            //should we let the flow update to the DS and DS let it flow down to child components?
-            //e.g. this.ds.update(key,id);
+
+            /**
+             * FIXME: if we can't determine the type we should get it from the config as an option
+             *
+             */
             var newValue = this.convertToType(this.state.record[this.state.property],this.refs.input.getDOMNode().value);
-            this.state.record[this.state.property] = newValue;
-            this.setState( { record : this.state.record, property : this.state.property, editMode : false } );
-            if ( this.props.onCellUpdated ) {
-                this.props.onCellUpdated();
-            }
+            var datasource = this.props.ds;
+            var index = this.props.index;
+
+            datasource.updateRecord(this.props.index,this.props.property,newValue,this.props.col);
+
+            this.setState( { record : this.state.record,  editMode : false } );
+
         }
 
     },
 
     onInputChange : function(event) {
-
+        //what the hell is this one doing here..
     },
 
     onBlur : function() {
-
-        this.setState( { path: this.state.path, record : this.state.record, property : this.state.property, editMode : !this.state.editMode } );
+        this.setState(this.state);
     },
 
     getInitialState: function() {
-        return { record : this.props.record, property : this.props.property, editMode : false, path: this.props.path  };
+        return { record : this.props.record, editMode : false };
     },
 
 
@@ -111,7 +118,7 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
      * @returns {XML}
      */
     createEditor : function() {
-        var record,property = null,
+        var //record,property = null,
             editable = this.props.col.editable || false,
             editMode = this.state.editMode;
 
@@ -121,26 +128,16 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
             return null;
         }
 
-        record = this.state.record;
-        property = this.state.property;
 
         return ( React.createElement("input", {onKeyUp: this.onKeyUp, ref: "input", onBlur: this.onBlur, className: "rdt-editor", 
-            style: this.getDisplayStyle(), onKeyUp: this.onKeyUp, onChange: this.onInputChange, ref: "input", defaultValue: record[property]}) );
+            style: this.getDisplayStyle(), onKeyUp: this.onKeyUp, onChange: this.onInputChange, ref: "input", defaultValue: this.getValue()}) );
     },
 
-
-
-    render: function() {
-
-
-        var record = this.state.record;
-        var property = this.state.property;
-        var path = this.state.path;
-        var editMode = this.state.editMode;
-
-
+    getValue : function() {
         var value = "";
-
+        var path = this.props.path;
+        var record = this.state.record;
+        var property = this.props.property;
         /**
          * By default, we will use record[property] if path is not given.
          * If path is provided and is a string then will uspltle record[path]
@@ -148,13 +145,12 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
          * else we dont do anything
          */
         if ( typeof property === 'string' ) {
-            if ( !this.state.path ) {
+            if ( !path ) {
                 value = record[property];
                 if ( typeof(value) === 'function' ) {
-                    value = value();
+                    value = value.call(record);
                 }
             } else {
-                //TODO: support for nested objects
                 if ( typeof path === 'string' ) {
                     value =  path.split(".").reduce(function(previous,current) {
                         if ( !previous || !current ) {
@@ -168,6 +164,18 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
                 }
             }
         }
+        return value;
+    },
+
+    render: function() {
+
+
+        var record = this.state.record;
+        var property = this.props.property;
+
+        var value = this.getValue();
+
+
 
          //FIXME ensure its a function
         if ( this.props.col.formatter ) {

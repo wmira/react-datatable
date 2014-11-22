@@ -9,6 +9,7 @@ var RDTBody = require("./body");
 var Paginator = require("./paginator");
 
 
+
 var TABLE_CSS = {
     pure: {
         table: 'pure-table pure-table-bordered'
@@ -50,7 +51,7 @@ var RDT = React.createClass({
     },
 
     add : function(record) {
-        this.ds.records.push(record);
+        this.ds.add(record);
         var pagerState = null;
         if ( this.pager ) {
             pagerState = this.pager.state()
@@ -59,11 +60,18 @@ var RDT = React.createClass({
         this.setState({ pager : pagerState });
     },
 
-
+    onDsChangeEvent : function() {
+        //listen and then notify listener
+        if ( this.props.onChange ) {
+            this.props.onChange();
+        }
+    },
 
     getInitialState: function () {
 
         this.ds = new DataSource(this.props.config,this.props.datasource);
+        this.ds.on("recordAdded",this.onDsChangeEvent);
+        this.ds.on("recordUpdated",this.onDsChangeEvent);
         if ( this.props.config.pager ) {
             this.pager = new Pager(1,this.props.config.pager.rowsPerPage,this.ds);
             return { pager : this.pager.state()  }
@@ -105,22 +113,3 @@ var RDT = React.createClass({
 
 
 module.exports = RDT;
-
-
-/*
- <tbody>
- {
- this.ds.map(this.state.pager,function(data,idx,realIdx) {
-
- //if this is a normal array map function, then realIdx here is the array
- //ths is why we do the check here
- //FIXME: we might want to move this
- var id = idx;
- if ( realIdx && !Array.isArray(realIdx)) {
- id = realIdx;
- }
- return  <RDTRow ds={this.ds} key={id}  data={data} config={config} />
- }.bind(this))
- }
- </tbody>
- */

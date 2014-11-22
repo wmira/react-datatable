@@ -2,28 +2,47 @@
 'use strict';
 
 var Pager = require('./pager');
+var EventEmitter = require("events").EventEmitter;
 
+
+/**
+ * TODO: should this be named recordset instead?
+ *
+ *
+ * @param config
+ * @param dsDef
+ * @constructor
+ */
 var DataSource = function(config,dsDef) {
     this.records = dsDef.data;
 };
 
 
-DataSource.prototype.dataAtIdx = function(index) {
-    return this.data[index];
+DataSource.prototype = EventEmitter.prototype;
+DataSource.prototype.constructor = DataSource;
+
+DataSource.prototype.recordAtIndex = function(index) {
+    return this.records[index];
 };
 
 /**
  * If key is defined then this data can be accessed using the key
  *
+ * FIXME: cell should use this.
+ *
  * @param key
  */
-DataSource.prototype.get = function(key) {
+DataSource.prototype.getRecord = function(index,property,path,record) {
     alert("get not implemented");
 };
 
+DataSource.prototype.add = function(record) {
+    this.records.push(record);
+    this.emit("recordAdded",record);
+};
 
 DataSource.prototype.length = function() {
-    return this.data.length;
+    return this.records.length;
 };
 
 /**
@@ -48,5 +67,32 @@ DataSource.prototype.map = function(pageState,mapper) {
     return result;
 
 };
+
+/**
+ * Up
+ *
+ *
+ * @param recordIdx
+ * @param newValue
+ */
+DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config) {
+
+    var record = this.records[recordIdx];
+    var path = config.path ? path : property;
+    var setter = config.setter ? config.setter : function() {
+                path.split(".").reduce(function(prev,current,index,arr) {
+                    if ( index === (arr.length - 1) ) {
+                        //we are at the end
+                        prev[current] = newValue;
+                    } else {
+                        return prev[current];
+                    }
+                },record);
+            } ;
+    setter.call(record,newValue,property,config);
+    //FIXME, we should get current value and pass as old value
+    this.emit("recordUpdated",record,recordIdx,property,newValue);
+};
+
 
 module.exports = DataSource;

@@ -4,7 +4,7 @@ var React = require('react');
 var RDTRow = require("./row");
 
 /**
- * React Component for Columns
+ * React Component for Body
  *
  */
 var RDTBody = React.createClass({
@@ -13,28 +13,30 @@ var RDTBody = React.createClass({
         this.setState({ pager: newprops.pager, ds : newprops.datasource});
     },
 
+
     getInitialState: function() {
         return { pager: this.props.pager, ds : this.props.datasource};
     },
+
 
     render: function() {
 
 
         return(
             <tbody>
-                        {
-                            this.state.ds.map(this.state.pager,function(data,idx,realIdx) {
+                {
+                    this.state.ds.map(this.state.pager, function (data, idx, realIdx) {
 
-                                //if this is a normal array map function, then realIdx here is the array
-                                //ths is why we do the check here
-                                //FIXME: we might want to move this
-                                var id = idx;
-                                if ( realIdx && !Array.isArray(realIdx)) {
-                                    id = realIdx;
-                                }
-                                return  <RDTRow ds={this.state.ds} key={id}  data={data} config={this.props.config} />
-                            }.bind(this))
-                            }
+                        //if this is a normal array map function, then realIdx here is the underlying array
+                        //if the map came from us, then realIdx is the real index. if we are on a page, then idx will point to
+                        //the index on the current view
+                        var id = idx;
+                        if (realIdx && !Array.isArray(realIdx)) {
+                            id = realIdx;
+                        }
+                        return <RDTRow index={id} ds={this.state.ds} key={id}  record={data} config={this.props.config} />
+                    }.bind(this))
+                }
             </tbody>
         )
 
