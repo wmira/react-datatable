@@ -79,7 +79,19 @@ DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config)
 
     var record = this.records[recordIdx];
     var path = config.path ? path : property;
-    var setter = config.setter ? config.setter : function() {
+    var setter = config.setter ?
+
+        //setter can be a string or an actual function derp
+        function(newValue,property,config) {
+            var thesetter = config.setter;
+            if ( typeof(config.setter) === 'string' ) {
+                thesetter = record[config.setter];
+            }
+            thesetter(newValue,property,config);
+
+        }:
+
+        function() {
                 path.split(".").reduce(function(prev,current,index,arr) {
                     if ( index === (arr.length - 1) ) {
                         //we are at the end
@@ -88,7 +100,7 @@ DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config)
                         return prev[current];
                     }
                 },record);
-            } ;
+        } ;
     setter.call(record,newValue,property,config);
     //FIXME, we should get current value and pass as old value
     this.emit("recordUpdated",record,recordIdx,property,newValue);
