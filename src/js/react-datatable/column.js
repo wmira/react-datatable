@@ -13,7 +13,7 @@ var RDTColumn = React.createClass({
         var cols = this.props.config.cols;
         return(
             <thead>
-                <tr> {
+                <tr>{
                     cols.map(function(col,idx) {
                         return <td key={idx + 100}>{col.header}</td>
                     })
