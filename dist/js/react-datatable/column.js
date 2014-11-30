@@ -13,7 +13,7 @@ var RDTColumn = React.createClass({displayName: 'RDTColumn',
         var cols = this.props.config.cols;
         return(
             React.createElement("thead", null, 
-                React.createElement("tr", null, " ", 
+                React.createElement("tr", null, 
                     cols.map(function(col,idx) {
                         return React.createElement("td", {key: idx + 100}, col.header)
                     })
