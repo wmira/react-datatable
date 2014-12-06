@@ -12,7 +12,8 @@ var React = require('react');
  */
 var RDTCell = React.createClass({displayName: 'RDTCell',
     componentWillReceiveProps : function(newProps) {
-
+        //FIXME, do an equal test here?
+        this.setState({ record : newProps.record, editMode : false });
     },
 
     /**
@@ -91,8 +92,11 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
             var index = this.props.index;
 
             datasource.updateRecord(this.props.index,this.props.property,newValue,this.props.col);
-
             this.setState( { record : this.state.record,  editMode : false } );
+            if ( this.props.onCellChange ) {
+                this.props.onCellChange();
+            }
+
 
         }
 

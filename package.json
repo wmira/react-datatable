@@ -1,9 +1,9 @@
 {
   "name": "react-datatable",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Data Table written in React view framework",
   "dependencies": {
-
+    "react" : "^0.12"
   },
   "author": "Warren Mira",
   "license": "MIT",
@@ -23,7 +23,6 @@
     "datagrid"
   ],
   "devDependencies": {
-    "react" : "0.12.1",
     "browserify": "*",
     "gulp": "*",
     "del": "*",

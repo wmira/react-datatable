@@ -78,16 +78,18 @@ DataSource.prototype.map = function(pageState,mapper) {
 DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config) {
 
     var record = this.records[recordIdx];
-    var path = config.path ? path : property;
+    var path = config.path ? config.path : property;
     var setter = config.setter ?
 
         //setter can be a string or an actual function derp
         function(newValue,property,config) {
             var thesetter = config.setter;
             if ( typeof(config.setter) === 'string' ) {
-                thesetter = record[config.setter];
+                record[config.setter](newValue,property,config);
+            } else {
+                //assume function
+                thesetter(newValue, property, config);
             }
-            thesetter(newValue,property,config);
 
         }:
 

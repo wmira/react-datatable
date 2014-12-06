@@ -42,7 +42,16 @@ var TABLE_CSS = {
  *
  */
 var RDT = React.createClass({
-
+    componentWillReceiveProps : function(newProps) {
+        this.ds = new DataSource(newProps.config,newProps.datasource);
+        this.ds.on("recordAdded",this.onDsChangeEvent);
+        this.ds.on("recordUpdated",this.onDsChangeEvent);
+        if ( newProps.config.pager ) {
+            this.pager = new Pager(1,newProps.config.pager.rowsPerPage,this.ds);
+            return { pager : this.pager.state()  }
+        }
+        return { pager : null };
+    },
     nextPage : function() {
         if ( this.pager ) {
             this.pager = this.pager.next();
