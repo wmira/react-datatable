@@ -68,9 +68,21 @@
 
 .rdt-container > table {
     position: relative;
+    margin-bottom: 0px;
 }
 
 .rdt-editor {
     position: absolute;
     box-sizing: border-box;
+}
+
+.rdt-paginator {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-top: none;
+    overflow: auto;
+}
+
+.rdt-paginator > div {
+    float:right;
 }

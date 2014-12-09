@@ -41,7 +41,8 @@ var Paginator = React.createClass({
         }
 
         return(
-            <div>
+            <div className="rdt-paginator">
+                <div>
                 <select value={currentPage} ref="pageSelection" onChange={this.pageSelectionHandler}>
                 {
                     pages.map(function (pageNum) {
@@ -49,6 +50,7 @@ var Paginator = React.createClass({
                     })
                 }
                 </select>
+                </div>
             </div>
         )
 

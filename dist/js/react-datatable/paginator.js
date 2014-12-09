@@ -41,13 +41,15 @@ var Paginator = React.createClass({displayName: 'Paginator',
         }
 
         return(
-            React.createElement("div", null, 
+            React.createElement("div", {className: "rdt-paginator"}, 
+                React.createElement("div", null, 
                 React.createElement("select", {value: currentPage, ref: "pageSelection", onChange: this.pageSelectionHandler}, 
                 
                     pages.map(function (pageNum) {
                         return React.createElement("option", {key: pageNum, value: pageNum}, pageNum)
                     })
                 
+                )
                 )
             )
         )

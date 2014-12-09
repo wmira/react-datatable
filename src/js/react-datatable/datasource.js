@@ -85,10 +85,11 @@ DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config)
         function(newValue,property,config) {
             var thesetter = config.setter;
             if ( typeof(config.setter) === 'string' ) {
-                record[config.setter](newValue,property,config);
+                record[config.setter](newValue, property, config);
             } else {
                 //assume function
-                thesetter(newValue, property, config);
+
+                thesetter.call(record,newValue, property, config);
             }
 
         }:
@@ -97,7 +98,11 @@ DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config)
                 path.split(".").reduce(function(prev,current,index,arr) {
                     if ( index === (arr.length - 1) ) {
                         //we are at the end
-                        prev[current] = newValue;
+                        if ( typeof prev[current] === 'function' ) {
+                            prev[current](newValue);
+                        } else {
+                            prev[current] = newValue;
+                        }
                     } else {
                         return prev[current];
                     }

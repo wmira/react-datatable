@@ -132,6 +132,9 @@ var RDTCell = React.createClass({displayName: 'RDTCell',
             return null;
         }
 
+        //TODO: either use built in editors or use the one returned by editor attribute
+        //editor can be a react component
+        //
 
         return ( React.createElement("input", {onKeyUp: this.onKeyUp, ref: "input", onBlur: this.onBlur, className: "rdt-editor", 
             style: this.getDisplayStyle(), onKeyUp: this.onKeyUp, onChange: this.onInputChange, ref: "input", defaultValue: this.getValue()}) );
