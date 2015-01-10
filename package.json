@@ -1,11 +1,11 @@
 {
   "name": "react-datatable",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Data Table written in React view framework",
   "dependencies": {},
   "author": "Warren Mira",
   "license": "MIT",
-  "main": "dist/js/react-datatable/rdt.js",
+  "main": "dist/js/react-datatable.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/wmira/react-datatable"
@@ -16,9 +16,9 @@
   "homepage": "https://github.com/wmira/react-datatable",
   
   "scripts": {
-    "build": "webpack src/react-datatable/rdt.js js/react-datatable.js",
-    "build-min": "NODE_ENV=production COMPRESS=1 webpack src/react-datatable/rdt.js js/react-datatable.js",
-    "watch": "webpack src/react-datatable/rdt.js js/react-datatable.js --watch"
+    "build": "webpack src/js/rdt.js dist/js/react-datatable.js",
+    "build-min": "NODE_ENV=production COMPRESS=1 webpack src/js/rdt.js dist/js/react-datatable.js",
+    "watch": "webpack src/js/rdt.js dist/js/react-datatable.js --watch"
   },
   
   "keywords": [
