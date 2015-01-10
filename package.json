@@ -2,9 +2,7 @@
   "name": "react-datatable",
   "version": "0.0.8",
   "description": "Data Table written in React view framework",
-  "dependencies": {
-    "react" : "^0.12"
-  },
+  "dependencies": {},
   "author": "Warren Mira",
   "license": "MIT",
   "main": "dist/js/react-datatable/rdt.js",
@@ -16,6 +14,13 @@
     "url": "https://github.com/wmira/react-datatable/issues"
   },
   "homepage": "https://github.com/wmira/react-datatable",
+  
+  "scripts": {
+    "build": "webpack src/react-datatable/rdt.js js/react-datatable.js",
+    "build-min": "NODE_ENV=production COMPRESS=1 webpack src/react-datatable/rdt.js js/react-datatable.js",
+    "watch": "webpack src/react-datatable/rdt.js js/react-datatable.js --watch"
+  },
+  
   "keywords": [
     "react",
     "react-component",
@@ -23,14 +28,8 @@
     "datagrid"
   ],
   "devDependencies": {
-    "browserify": "*",
-    "gulp": "*",
-    "del": "*",
-    "gulp-changed": "^1.0.0",
-    "vinyl-source-stream": "^1.0.0",
-    "browser-sync": "^1.6.2",
-    "numeral": "^1.5.3",
-    "gulp-react": "^2.0.0",
-    "gulp-es6-transpiler": "^1.0.0"
+    "jsx-loader": "^0.12.2",
+    "react": "^0.12.2",
+    "webpack": "^1.4.15"
   }
 }
