@@ -30,7 +30,7 @@
     "jsx-loader": "^0.12.2",
     "mocha": "^2.1.0",
     "react": "^0.12.2",
-    "react-render-wrapper": "^1.0.1",
+    "react-render-wrapper": "^1.0.2",
     "webpack": "^1.4.15"
   }
 }
