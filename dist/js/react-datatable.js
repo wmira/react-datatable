@@ -157,9 +157,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    componentDidMount : function() {
-	        (this.props.datasource || dsFactory.fromArray([])).then(function(datasource) {
-	            this.setState({datasource : datasource});
-	        }.bind(this));
+	        
+	        if ( this.props.datasource instanceof Array ) {
+	            dsFactory.fromArray(this.props.datasource).then(function (datasource) {
+	                this.setState({datasource: datasource});
+	            }.bind(this));
+	        }
 	    },
 	    getInitialState: function () {
 
