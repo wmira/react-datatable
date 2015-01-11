@@ -1,45 +1,48 @@
+/** @jsx React.DOM */
+/*globals require,module */
+"use strict";
 
-'use strict';
-
-var Pager = require('./pager');
 var EventEmitter = require("events").EventEmitter;
 
 
 /**
- * TODO: should this be named recordset instead?
- *
- *
- * @param config
- * @param dsDef
+ * Create a new datasource using records array as a backing dataset
+ * 
+ * @param records
  * @constructor
  */
-var DataSource = function(config,dsDef) {
-    this.records = dsDef.data;
+var DataSource = function(records) {
+    this.records = records;
 };
 
 
 DataSource.prototype = EventEmitter.prototype;
 DataSource.prototype.constructor = DataSource;
 
-DataSource.prototype.recordAtIndex = function(index) {
+/**
+ * Access the record at the given index
+ *
+ * @param index
+ * @returns record
+ */
+DataSource.prototype.record = function(index) {
     return this.records[index];
 };
 
-/**
- * If key is defined then this data can be accessed using the key
- *
- * FIXME: cell should use this.
- *
- * @param key
- */
-DataSource.prototype.getRecord = function(index,property,path,record) {
-    alert("get not implemented");
+DataSource.prototype.empty = function() {
+   this.records = [];
+    this.emit("recordsUpdated");
 };
-
-DataSource.prototype.add = function(record) {
-    this.records.push(record);
+/**
+ * Append a record
+ *  
+ * @param record
+ */
+DataSource.prototype.append = function(record) {
+    this.records.push(record)
     this.emit("recordAdded",record);
 };
+
 
 DataSource.prototype.length = function() {
     return this.records.length;
@@ -50,7 +53,6 @@ DataSource.prototype.length = function() {
  * The mapper function gets the record, currentIndex and actual index
  */
 DataSource.prototype.map = function(pageState,mapper) {
-
     if ( !pageState ) {
         return this.records.map(mapper);
     }
@@ -65,7 +67,6 @@ DataSource.prototype.map = function(pageState,mapper) {
     }
 
     return result;
-
 };
 
 /**
@@ -93,20 +94,19 @@ DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config)
             }
 
         }:
-
         function() {
-                path.split(".").reduce(function(prev,current,index,arr) {
-                    if ( index === (arr.length - 1) ) {
-                        //we are at the end
-                        if ( typeof prev[current] === 'function' ) {
-                            prev[current](newValue);
-                        } else {
-                            prev[current] = newValue;
-                        }
+            path.split(".").reduce(function(prev,current,index,arr) {
+                if ( index === (arr.length - 1) ) {
+                    //we are at the end
+                    if ( typeof prev[current] === 'function' ) {
+                        prev[current](newValue);
                     } else {
-                        return prev[current];
+                        prev[current] = newValue;
                     }
-                },record);
+                } else {
+                    return prev[current];
+                }
+            },record);
         } ;
     setter.call(record,newValue,property,config);
     //FIXME, we should get current value and pass as old value

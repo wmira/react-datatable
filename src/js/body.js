@@ -1,6 +1,5 @@
 /** @jsx React.DOM */
 var React = require('react');
-
 var RDTRow = require("./row");
 
 /**
@@ -36,7 +35,7 @@ var RDTBody = React.createClass({
                         }
                         return <RDTRow index={id} ds={this.state.ds} key={id}  record={data} config={this.props.config} />
                     }.bind(this))
-                }
+                    }
             </tbody>
         )
 

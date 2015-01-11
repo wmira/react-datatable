@@ -1,6 +1,8 @@
 /** @jsx React.DOM */
 var React = require('react');
-var DataSource = require("./datasource");
+
+var DataSource = require("./ds/datasource");
+var dsFactory = require("./ds")
 var Pager = require("./pager");
 
 var RDTRow = require("./row");
@@ -43,7 +45,10 @@ var TABLE_CSS = {
  */
 var RDT = React.createClass({
     componentWillReceiveProps : function(newProps) {
-        this.ds = new DataSource(newProps.config,newProps.datasource);
+        //this.ds = new DataSource(newProps.config,newProps.datasource);
+        if ( newProps.datasource ) {
+            this.ds = newProps.datasource;
+        }
         this.ds.on("recordAdded",this.onDsChangeEvent);
         this.ds.on("recordUpdated",this.onDsChangeEvent);
         if ( newProps.config.pager ) {
@@ -76,16 +81,21 @@ var RDT = React.createClass({
         }
     },
 
+    componentDidMount : function() {
+        (this.props.datasource || dsFactory.fromArray([])).then(function(datasource) {
+            this.setState({datasource : datasource});
+        }.bind(this));
+    },
     getInitialState: function () {
 
-        this.ds = new DataSource(this.props.config,this.props.datasource);
-        this.ds.on("recordAdded",this.onDsChangeEvent);
-        this.ds.on("recordUpdated",this.onDsChangeEvent);
+        var ds = new DataSource([]);
+        var pager =  null; 
+        if (this.props.config.pager  )
         if ( this.props.config.pager ) {
-            this.pager = new Pager(1,this.props.config.pager.rowsPerPage,this.ds);
-            return { pager : this.pager.state()  }
+            pager = new Pager(1, this.props.config.pager.rowsPerPage, this.ds);
         }
-        return { pager : null };
+        return { datasource : ds, pager :pager };
+        
     },
 
     pagerUpdated : function(page) {
@@ -99,24 +109,43 @@ var RDT = React.createClass({
 
         var tableStyle = TABLE_CSS[this.props.config.style];
         var config = this.props.config;
+        var datasource = this.state.datasource;
 
         var paginator = null;
-        if ( this.pager ) {
-            paginator =  <Paginator datasource={this.ds} config={this.props.config} pageChangedListener={this.pagerUpdated}/> ;
+        
+        if ( this.state.pager ) {
+            paginator =  <Paginator datasource={datasource} config={this.props.config} pageChangedListener={this.pagerUpdated}/> ;
 
         }
+
         return (
             <div>
                 <div className="rdt-container" ref="container">
                     <table className={tableStyle['table']}>
                         <RDTColumn config={config} />
-                        <RDTBody config={config} datasource={this.ds} pager={this.state.pager}/>
+                        <RDTBody config={config} datasource={datasource} pager={this.state.pager}/>
                     </table>
                 </div>
                 {paginator}
             </div>
         )
 
+    },
+
+
+
+    /**
+     * Return the underlying datasource if argument is null or use the new datasource provided
+     *
+     *
+     * @returns {*|Function|datasource|RDT.getInitialState.datasource|paginator.datasource|RDT.render.datasource}
+     */
+    datasource : function(datasource) {
+        if ( !datasource ) {
+            return this.state.datasource;
+        } 
+        this.setState({datasource: datasource});
+        return datasource;
     }
 });
 

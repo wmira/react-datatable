@@ -7,6 +7,7 @@ var plugins = [
     })
 ];
 
+
 if (process.env.COMPRESS) {
 
     plugins.push(

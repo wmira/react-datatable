@@ -14,13 +14,11 @@
     "url": "https://github.com/wmira/react-datatable/issues"
   },
   "homepage": "https://github.com/wmira/react-datatable",
-  
   "scripts": {
-    "build": "webpack src/js/rdt.js dist/js/react-datatable.js",
-    "build-min": "NODE_ENV=production COMPRESS=1 webpack src/js/rdt.js dist/js/react-datatable.js",
-    "watch": "webpack src/js/rdt.js dist/js/react-datatable.js --watch"
+    "build": "webpack src/js/index.js dist/js/react-datatable.js",
+    "build-min": "NODE_ENV=production COMPRESS=1 webpack src/js/index.js dist/js/react-datatable.min.js",
+    "watch": "webpack src/js/index.js dist/js/react-datatable.js --watch"
   },
-  
   "keywords": [
     "react",
     "react-component",
@@ -28,8 +26,12 @@
     "datagrid"
   ],
   "devDependencies": {
+    "bluebird": "^2.6.2",
     "jsx-loader": "^0.12.2",
+    "mocha": "^2.1.0",
+    "mori": "^0.2.9",
     "react": "^0.12.2",
+    "react-render-wrapper": "^1.0.1",
     "webpack": "^1.4.15"
   }
 }
