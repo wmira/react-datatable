@@ -1,6 +1,6 @@
 {
   "name": "react-datatable",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Data Table written in React view framework",
   "dependencies": {},
   "author": "Warren Mira",
@@ -29,7 +29,6 @@
     "bluebird": "^2.6.2",
     "jsx-loader": "^0.12.2",
     "mocha": "^2.1.0",
-    "mori": "^0.2.9",
     "react": "^0.12.2",
     "react-render-wrapper": "^1.0.1",
     "webpack": "^1.4.15"
