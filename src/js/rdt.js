@@ -1,8 +1,7 @@
 /** @jsx React.DOM */
 var React = require('react');
 
-var DataSource = require("./ds/datasource");
-var dsFactory = require("./ds")
+var DataSource = require("./datasource");
 var Pager = require("./pager");
 
 var RDTRow = require("./row");
@@ -83,10 +82,10 @@ var RDT = React.createClass({
 
     componentDidMount : function() {
         
-        if ( this.props.datasource instanceof Array ) {
-            dsFactory.fromArray(this.props.datasource).then(function (datasource) {
-                this.setState({datasource: datasource});
-            }.bind(this));
+        if ( this.props.data instanceof Array ) {
+            this.setState({datasource: new DataSource(this.props.data)})
+        } else if ( this.props.datasource ) {
+            this.datasource(this.props.datasource);
         }
     },
     getInitialState: function () {
@@ -146,9 +145,17 @@ var RDT = React.createClass({
     datasource : function(datasource) {
         if ( !datasource ) {
             return this.state.datasource;
-        } 
-        this.setState({datasource: datasource});
-        return datasource;
+        }
+        if ( typeof datasource.then === "function" ) {
+            datasource.then(function(data) {
+                this.setState({datasource: new DataSource(data,this.props.mapper)});
+            }.bind(this));
+        } else {
+            this.setState({datasource: datasource});
+
+        }
+
+
     }
 });
 

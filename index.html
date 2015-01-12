@@ -86,7 +86,7 @@
         ]
     };
 
-    var datatable = RDT.render({datasource: data1, config: config},"content");
+    var datatable = RDT.render({datasource: RDT.datasource(data1), config: config},"content");
     
     document.getElementById("populate1").addEventListener("click",function() {
         datatable.datasource(RDT.datasource.create(data1));
