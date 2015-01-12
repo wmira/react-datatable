@@ -56,9 +56,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var DataSource = __webpack_require__(3);
+	var DataSource = __webpack_require__(2);
 
-	var RDT = __webpack_require__(9)(__webpack_require__(1),__webpack_require__(2));
+	var RDT = __webpack_require__(4)(__webpack_require__(1),__webpack_require__(3));
 	RDT.datasource = function(data,mapper) {
 	    return new DataSource(data,mapper);
 	}
@@ -77,175 +77,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
-	var React = __webpack_require__(1);
-
-	var DataSource = __webpack_require__(3);
-	var Pager = __webpack_require__(4);
-
-	var RDTRow = __webpack_require__(5);
-	var RDTColumn = __webpack_require__(6);
-	var RDTBody = __webpack_require__(7);
-	var Paginator = __webpack_require__(8);
-
-
-
-	var TABLE_CSS = {
-	    pure: {
-	        table: 'pure-table pure-table-bordered'
-	    },
-	    'pure-striped': {
-	        table: 'pure-table pure-table-bordered pure-table-striped'
-	    },
-	    bootstrap: {
-	        table: 'table table-bordered'
-	    },
-	    foundation: {
-	        table: ''
-	    }
-	}
-
-	/**
-	 * Simple Data Table using react.
-	 *
-	 *
-	 *  var datasource = {
-	 *       data: []
-	 *   };
-	 *
-	 *  var config = {
-	 *      style : 'pure',
-	 *       cols : [
-	 *           { editable: true, property: "path" , header: "First Name"  }
-	        ]
-	    };
-	 *
-	 */
-	var RDT = React.createClass({displayName: "RDT",
-	    componentWillReceiveProps : function(newProps) {
-	        //this.ds = new DataSource(newProps.config,newProps.datasource);
-	        if ( newProps.datasource ) {
-	            this.ds = newProps.datasource;
-	        }
-	        this.ds.on("recordAdded",this.onDsChangeEvent);
-	        this.ds.on("recordUpdated",this.onDsChangeEvent);
-	        if ( newProps.config.pager ) {
-	            this.pager = new Pager(1,newProps.config.pager.rowsPerPage,this.ds);
-	            return { pager : this.pager.state()  }
-	        }
-	        return { pager : null };
-	    },
-	    nextPage : function() {
-	        if ( this.pager ) {
-	            this.pager = this.pager.next();
-	            this.setState({ pager : this.pager.state() });
-	        }
-	    },
-
-	    add : function(record) {
-	        this.ds.add(record);
-	        var pagerState = null;
-	        if ( this.pager ) {
-	            pagerState = this.pager.state()
-	        }
-
-	        this.setState({ pager : pagerState });
-	    },
-
-	    onDsChangeEvent : function() {
-	        //listen and then notify listener
-	        if ( this.props.onChange ) {
-	            this.props.onChange();
-	        }
-	    },
-
-	    componentDidMount : function() {
-	        
-	        if ( this.props.data instanceof Array ) {
-	            this.setState({datasource: new DataSource(this.props.data)})
-	        } else if ( this.props.datasource ) {
-	            this.datasource(this.props.datasource);
-	        }
-	    },
-	    getInitialState: function () {
-
-	        var ds = new DataSource([]);
-	        var pager =  null; 
-	        if (this.props.config.pager  )
-	        if ( this.props.config.pager ) {
-	            pager = new Pager(1, this.props.config.pager.rowsPerPage, this.ds);
-	        }
-	        return { datasource : ds, pager :pager };
-	        
-	    },
-
-	    pagerUpdated : function(page) {
-	        if ( this.pager ) {
-	            this.pager = this.pager.toPage(page);
-	            this.setState({ pager : this.pager.state() });
-	        }
-	    },
-
-	    render: function () {
-
-	        var tableStyle = TABLE_CSS[this.props.config.style];
-	        var config = this.props.config;
-	        var datasource = this.state.datasource;
-
-	        var paginator = null;
-	        
-	        if ( this.state.pager ) {
-	            paginator =  React.createElement(Paginator, {datasource: datasource, config: this.props.config, pageChangedListener: this.pagerUpdated}) ;
-
-	        }
-
-	        return (
-	            React.createElement("div", null, 
-	                React.createElement("div", {className: "rdt-container", ref: "container"}, 
-	                    React.createElement("table", {className: tableStyle['table']}, 
-	                        React.createElement(RDTColumn, {config: config}), 
-	                        React.createElement(RDTBody, {config: config, datasource: datasource, pager: this.state.pager})
-	                    )
-	                ), 
-	                paginator
-	            )
-	        )
-
-	    },
-
-
-
-	    /**
-	     * Return the underlying datasource if argument is null or use the new datasource provided
-	     *
-	     *
-	     * @returns {*|Function|datasource|RDT.getInitialState.datasource|paginator.datasource|RDT.render.datasource}
-	     */
-	    datasource : function(datasource) {
-	        if ( !datasource ) {
-	            return this.state.datasource;
-	        }
-	        if ( typeof datasource.then === "function" ) {
-	            datasource.then(function(data) {
-	                this.setState({datasource: new DataSource(data,this.props.mapper)});
-	            }.bind(this));
-	        } else {
-	            this.setState({datasource: datasource});
-
-	        }
-
-
-	    }
-	});
-
-
-	module.exports = RDT;
-
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM */
 	/*globals require,module */
 	"use strict";
 
@@ -259,10 +90,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @constructor
 	 */
 	var DataSource = function(records,mapper) {
-	    if ( mapper ) {
-	        this.records = records.map(mapper);
+	    
+	    if ( records instanceof Array ) {
+	        if (mapper) {
+	            this.records = records.map(mapper);
+	        } else {
+	            this.records = records;
+	        }
 	    } else {
-	        this.records = records;
+	        var dsRef =  records;
+	        var dataField = records["data"];
+	        var data = records["datasource"];
+	        this.records =  data[dataField];
 	    }
 	};
 
@@ -368,7 +207,254 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = DataSource;
 
 /***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM */
+	var React = __webpack_require__(1);
+
+	var DataSource = __webpack_require__(2);
+	var Pager = __webpack_require__(5);
+
+	var RDTRow = __webpack_require__(6);
+	var RDTColumn = __webpack_require__(7);
+	var RDTBody = __webpack_require__(8);
+	var Paginator = __webpack_require__(9);
+
+
+
+	var TABLE_CSS = {
+	    pure: {
+	        table: 'pure-table pure-table-bordered'
+	    },
+	    'pure-striped': {
+	        table: 'pure-table pure-table-bordered pure-table-striped'
+	    },
+	    bootstrap: {
+	        table: 'table table-bordered'
+	    },
+	    foundation: {
+	        table: ''
+	    }
+	}
+
+	/**
+	 * Simple Data Table using react.
+	 *
+	 *
+	 *  var datasource = {
+	 *       data: []
+	 *   };
+	 *
+	 *  var config = {
+	 *      style : 'pure',
+	 *       cols : [
+	 *           { editable: true, property: "path" , header: "First Name"  }
+	        ]
+	    };
+	 *
+	 */
+	var RDT = React.createClass({displayName: "RDT",
+	    
+	    
+	    componentWillReceiveProps : function(newProps) {
+	        this.componentDidMount(newProps);
+	        /*
+	        if ( newProps.datasource ) {
+	            this.ds = newProps.datasource;
+	        }
+	        this.ds.on("recordAdded",this.onDsChangeEvent);
+	        this.ds.on("recordUpdated",this.onDsChangeEvent);
+	        if ( newProps.config.pager ) {
+	            this.pager = new Pager(1,newProps.config.pager.rowsPerPage,this.ds);
+	            return { pager : this.pager.state()  }
+	        }
+	        return { pager : null }; */
+	    },
+	    nextPage : function() {
+	        if ( this.pager ) {
+	            this.pager = this.pager.next();
+	            this.setState({ pager : this.pager.state() });
+	        }
+	    },
+
+	    add : function(record) {
+	        this.ds.add(record);
+	        var pagerState = null;
+	        if ( this.pager ) {
+	            pagerState = this.pager.state()
+	        }
+
+	        this.setState({ pager : pagerState });
+	    },
+
+	    onDsChangeEvent : function() {
+	        if ( this.props.onChange ) {
+	            this.props.onChange();
+	        }
+	    },
+
+	    componentDidMount : function(props) {
+	        var propsToUse = this.props;
+	        if ( props ) {
+	            propsToUse = props;
+	        }
+	        if ( propsToUse.data  ) {
+	            this.setState({datasource: new DataSource(propsToUse.data)});
+	        } else if ( propsToUse.datasource ) {
+	            this.setDataSource(propsToUse.datasource);
+	        }
+	    },
+	    getInitialState: function () {
+
+	        var ds = new DataSource([]);
+	        var pager =  null; 
+	        if (this.props.config.pager  )
+	        if ( this.props.config.pager ) {
+	            pager = new Pager(1, this.props.config.pager.rowsPerPage, this.ds);
+	        }
+	        return { datasource : ds, pager :pager };
+	        
+	    },
+
+	    pagerUpdated : function(page) {
+	        if ( this.pager ) {
+	            this.pager = this.pager.toPage(page);
+	            this.setState({ pager : this.pager.state() });
+	        }
+	    },
+
+	    render: function () {
+
+	        var tableStyle = TABLE_CSS[this.props.config.style];
+	        var config = this.props.config;
+	        var datasource = this.state.datasource;
+
+	        var paginator = null;
+	        
+	        if ( this.state.pager ) {
+	            paginator =  React.createElement(Paginator, {datasource: datasource, config: this.props.config, pageChangedListener: this.pagerUpdated}) ;
+
+	        }
+
+	        return (
+	            React.createElement("div", null, 
+	                React.createElement("div", {className: "rdt-container", ref: "container"}, 
+	                    React.createElement("table", {className: tableStyle['table']}, 
+	                        React.createElement(RDTColumn, {config: config}), 
+	                        React.createElement(RDTBody, {config: config, datasource: datasource, pager: this.state.pager})
+	                    )
+	                ), 
+	                paginator
+	            )
+	        )
+
+	    },
+
+
+
+	    /**
+	     * Return the underlying datasource if argument is null or use the new datasource provided
+	     *
+	     *
+	     * @returns {*|Function|datasource|RDT.getInitialState.datasource|paginator.datasource|RDT.render.datasource}
+	     */
+	    
+
+	    setDataSource : function(datasource) {
+
+	        if ( typeof datasource.then === "function" ) {
+	            datasource.then(function(data) {
+	                this.setState({datasource: new DataSource(data,this.props.mapper)});
+	            }.bind(this));
+	        } else {
+	            this.setState({datasource: datasource});
+
+	        }
+	    }
+	    
+	});
+
+
+	module.exports = RDT;
+
+
+/***/ },
 /* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*globals require,module,React */
+	"use strict";
+
+	/**
+	 * React instance creation is a bit noisy. Use this on react a library such
+	 * that its more direct to the point when creating new instance. E.g.
+	 *
+	   React.render(React.createElement(ViewPager,{ views : ["page11","page22","page33"], visible:"page11"}),
+	            document.getElementById("viewpager-container2"));
+	 * 
+	 * to something like
+	 *
+	 * ViewPager.render({ views : ["page1","page2","page3"], visible:"page1"},"viewpager-container");
+	 * or
+	 * ViewPager.render("viewpager-container");
+	 * 
+	 * If your are exposing a library then :
+	 * 
+	 * var renderWrapper = require("react-render");
+	 * var MyReactComponent = React.createClass... 
+	 * 
+	 * module.exports = renderWrapper(React,MyReactComponent)
+	 *
+	 */
+
+	/**
+	 * 
+	 * Shortcut to React.createElement(cls,option) 
+	 *
+	 */
+	var elWrapper = function(React,ReactClass,option) {
+	    return React.createElement(ReactClass,option);
+	};
+	    
+	var renderWrapper = function(React,ReactClass,options,el) {
+	    
+	    var ouroption = {};
+	    //if he passed an html element or a string on the first argument
+	    //then we assume he wants no options
+	    var ourEl = null;
+	    
+	    //check if its actually an element
+	    if ( ( options.tagName && options.nodeName && (typeof options.nodeType === 'number') ) 
+	        || ( typeof options === 'string' ) ) {
+	        ourEl = options;
+	    } else {
+	        ouroption = options;
+	        ourEl = ( typeof el === 'string') ? document.getElementById(el) : el;
+	    }
+
+	    return React.render(elWrapper(React,ReactClass,ouroption), ourEl);
+	};
+
+	var RenderWrapper = function(React,ReactClass) {
+
+	    return {
+	        cls : ReactClass,
+	        el : function(options) {
+	            return elWrapper(React,ReactClass,options);
+	        },
+	        render : function(options,el) {
+	            return renderWrapper(React,ReactClass,options,el)
+	        }
+	    }
+
+	};
+
+	module.exports = RenderWrapper;
+
+
+/***/ },
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -442,7 +528,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Pager;
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -496,7 +582,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTRow;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -531,12 +617,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
 	var React = __webpack_require__(1);
-	var RDTRow = __webpack_require__(5);
+	var RDTRow = __webpack_require__(6);
 
 	/**
 	 * React Component for Body
@@ -582,7 +668,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTBody;
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -646,80 +732,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	module.exports = Paginator;
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*globals require,module,React */
-	"use strict";
-
-	/**
-	 * React instance creation is a bit noisy. Use this on react a library such
-	 * that its more direct to the point when creating new instance. E.g.
-	 *
-	   React.render(React.createElement(ViewPager,{ views : ["page11","page22","page33"], visible:"page11"}),
-	            document.getElementById("viewpager-container2"));
-	 * 
-	 * to something like
-	 *
-	 * ViewPager.render({ views : ["page1","page2","page3"], visible:"page1"},"viewpager-container");
-	 * or
-	 * ViewPager.render("viewpager-container");
-	 * 
-	 * If your are exposing a library then :
-	 * 
-	 * var renderWrapper = require("react-render");
-	 * var MyReactComponent = React.createClass... 
-	 * 
-	 * module.exports = renderWrapper(React,MyReactComponent)
-	 *
-	 */
-
-	/**
-	 * 
-	 * Shortcut to React.createElement(cls,option) 
-	 *
-	 */
-	var elWrapper = function(React,ReactClass,option) {
-	    return React.createElement(ReactClass,option);
-	};
-	    
-	var renderWrapper = function(React,ReactClass,options,el) {
-	    
-	    var ouroption = {};
-	    //if he passed an html element or a string on the first argument
-	    //then we assume he wants no options
-	    var ourEl = null;
-	    
-	    //check if its actually an element
-	    if ( ( options.tagName && options.nodeName && (typeof options.nodeType === 'number') ) 
-	        || ( typeof options === 'string' ) ) {
-	        ourEl = options;
-	    } else {
-	        ouroption = options;
-	        ourEl = ( typeof el === 'string') ? document.getElementById(el) : el;
-	    }
-
-	    return React.render(elWrapper(React,ReactClass,ouroption), ourEl);
-	};
-
-	var RenderWrapper = function(React,ReactClass) {
-
-	    return {
-	        cls : ReactClass,
-	        el : function(options) {
-	            return elWrapper(React,ReactClass,options);
-	        },
-	        render : function(options,el) {
-	            return renderWrapper(React,ReactClass,options,el)
-	        }
-	    }
-
-	};
-
-	module.exports = RenderWrapper;
-
 
 /***/ },
 /* 10 */

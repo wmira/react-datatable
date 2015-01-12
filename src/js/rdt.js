@@ -43,8 +43,11 @@ var TABLE_CSS = {
  *
  */
 var RDT = React.createClass({
+    
+    
     componentWillReceiveProps : function(newProps) {
-        //this.ds = new DataSource(newProps.config,newProps.datasource);
+        this.componentDidMount(newProps);
+        /*
         if ( newProps.datasource ) {
             this.ds = newProps.datasource;
         }
@@ -54,7 +57,7 @@ var RDT = React.createClass({
             this.pager = new Pager(1,newProps.config.pager.rowsPerPage,this.ds);
             return { pager : this.pager.state()  }
         }
-        return { pager : null };
+        return { pager : null }; */
     },
     nextPage : function() {
         if ( this.pager ) {
@@ -74,18 +77,20 @@ var RDT = React.createClass({
     },
 
     onDsChangeEvent : function() {
-        //listen and then notify listener
         if ( this.props.onChange ) {
             this.props.onChange();
         }
     },
 
-    componentDidMount : function() {
-        
-        if ( this.props.data instanceof Array ) {
-            this.setState({datasource: new DataSource(this.props.data)})
-        } else if ( this.props.datasource ) {
-            this.datasource(this.props.datasource);
+    componentDidMount : function(props) {
+        var propsToUse = this.props;
+        if ( props ) {
+            propsToUse = props;
+        }
+        if ( propsToUse.data  ) {
+            this.setState({datasource: new DataSource(propsToUse.data)});
+        } else if ( propsToUse.datasource ) {
+            this.setDataSource(propsToUse.datasource);
         }
     },
     getInitialState: function () {
@@ -142,10 +147,10 @@ var RDT = React.createClass({
      *
      * @returns {*|Function|datasource|RDT.getInitialState.datasource|paginator.datasource|RDT.render.datasource}
      */
-    datasource : function(datasource) {
-        if ( !datasource ) {
-            return this.state.datasource;
-        }
+    
+
+    setDataSource : function(datasource) {
+
         if ( typeof datasource.then === "function" ) {
             datasource.then(function(data) {
                 this.setState({datasource: new DataSource(data,this.props.mapper)});
@@ -154,9 +159,8 @@ var RDT = React.createClass({
             this.setState({datasource: datasource});
 
         }
-
-
     }
+    
 });
 
 

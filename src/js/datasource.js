@@ -12,10 +12,18 @@ var EventEmitter = require("events").EventEmitter;
  * @constructor
  */
 var DataSource = function(records,mapper) {
-    if ( mapper ) {
-        this.records = records.map(mapper);
+    
+    if ( records instanceof Array ) {
+        if (mapper) {
+            this.records = records.map(mapper);
+        } else {
+            this.records = records;
+        }
     } else {
-        this.records = records;
+        var dsRef =  records;
+        var dataField = records["data"];
+        var data = records["datasource"];
+        this.records =  data[dataField];
     }
 };
 

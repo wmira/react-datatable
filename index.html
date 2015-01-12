@@ -1,19 +1,27 @@
-<!Doctype html>
+<!DOCTYPE html>
 <html>
 
 <head>
     <title>RDT Demo</title>
     <!-- <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css"> -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
 
-    <link rel="stylesheet" href="dist/css/rdt.css">
+    <link rel="stylesheet" href="dist/css/rdt.css"/>
+    <style>
+
+        html,body {
+            font-size: 12px;
+        }
+
+    </style>
 </head>
 <body>
-<div style="padding:30px;">
-    <div><button id="populate1">Populate</button>&nbsp; <button id="populate2">Populate2</button></div>
-    <div id="content"/>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-10">
+            <div id="content"></div>
+        </div>
+    </div>
 </div>
 
 <script src="http://fb.me/react-0.12.2.js"></script>
@@ -86,12 +94,13 @@
         ]
     };
 
-    var datatable = RDT.render({datasource: RDT.datasource(data1), config: config},"content");
+    var datatable = RDT.render({data: data2, config: config},"content");
     
+    /*
     document.getElementById("populate1").addEventListener("click",function() {
         datatable.datasource(RDT.datasource.create(data1));
     });
-    
+    */
 
 
 
