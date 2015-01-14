@@ -3,7 +3,7 @@
 "use strict";
 
 var EventEmitter = require("events").EventEmitter;
-
+var utils = require("./utils");
 
 /**
  * Create a new datasource using records array as a backing dataset
@@ -11,7 +11,7 @@ var EventEmitter = require("events").EventEmitter;
  * @param records
  * @constructor
  */
-var DataSource = function(records,mapper) {
+var DataSource = function(records,mapper,config) {
     
     if ( records instanceof Array ) {
         if (mapper) {
@@ -20,11 +20,18 @@ var DataSource = function(records,mapper) {
             this.records = records;
         }
     } else {
-        var dsRef =  records;
         var dataField = records["data"];
         var data = records["datasource"];
         this.records =  data[dataField];
     }
+    this.config = config;
+    if ( config ) {
+        this.properyConfigMap = {};
+        this.config.cols.forEach( col => {
+            this.properyConfigMap[col.property] = col;
+        });
+    }
+    this.sortedInfo = null;
 };
 
 
@@ -61,6 +68,38 @@ DataSource.prototype.length = function() {
 };
 
 /**
+ * FIXME: Still broken, we need to be able to sort depending on type
+ *
+ * @param property
+ * @param direction
+ */
+DataSource.prototype.sort = function(property,direction) {
+     this.records.sort(  ( o1,o2 ) => {
+        var reverseDir = 1;
+         if ( direction === "-1" ) {
+             reverseDir = -1;
+             
+         }
+        var col = this.properyConfigMap[property];
+        
+        var v1 = utils.extractValue(property,col.path,o1);
+        var v2 = utils.extractValue(property,col.path,o2);
+      
+        if ( v1  ) {
+            return v1.localeCompare(v2) * reverseDir;
+        } else if ( v2 ) {
+            return v2.localeCompare(v1) * reverseDir;
+        } else {
+            return 0;
+        }
+        
+    });
+    
+    this.sortedInfo = { property: property, direction: direction};
+
+};
+
+/**
  * Maps the actual page
  * The mapper function gets the record, currentIndex and actual index
  */
@@ -68,7 +107,6 @@ DataSource.prototype.map = function(pageState,mapper) {
     if ( !pageState ) {
         return this.records.map(mapper);
     }
-
 
     var result = [];
     var counter = 0;

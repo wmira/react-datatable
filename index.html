@@ -1,28 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
-<head>
-    <title>RDT Demo</title>
-    <!-- <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css"> -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
+    <head>
+        <title>RDT Demo</title>
+        <!-- <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css"> -->
+        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
 
-    <link rel="stylesheet" href="dist/css/rdt.css"/>
-    <style>
+        <link rel="stylesheet" href="dist/css/rdt.css"/>
+        <style>
 
-        html,body {
-            font-size: 12px;
-        }
+            body {
+                font-size: 12px;
+            }
 
-    </style>
-</head>
+        </style>
+    </head>
 <body>
-<div class="container">
-    <div class="row">
-        <div class="col-lg-10">
-            <div id="content"></div>
+    <br/>
+    <button id="swapper" class="btn btn-primary">Swap</button>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10">
+                <div id="content"></div>
+            </div>
         </div>
     </div>
-</div>
 
 <script src="http://fb.me/react-0.12.2.js"></script>
 <script src="dist/js/react-datatable.js"></script>
@@ -37,7 +39,7 @@
         { name: 'Caesar Vance', position: 'Pre-Sales Support', office: 'New York', age: 33, salary: 162700 },
         { name: 'Cara Stevens', position: 'Sales Assistant', office: 'New York', age: 46, salary: 145600}
     ];
-    
+
     var data2 = [
         { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 33, salary: 162700},
         { name: 'Bradley Greer', position: 'Software Engineer', office: 'London', age: 41, salary: 132000},
@@ -94,15 +96,12 @@
         ]
     };
 
-    var datatable = RDT.render({data: data2, config: config},"content");
-    
-    /*
-    document.getElementById("populate1").addEventListener("click",function() {
-        datatable.datasource(RDT.datasource.create(data1));
+    RDT.render({data: data1, config: config},"content");
+
+
+    document.getElementById("swapper").addEventListener("click",function() {
+        RDT.render({data: data1, config: config},"content")
     });
-    */
-
-
 
 </script>
 

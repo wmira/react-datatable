@@ -1,6 +1,7 @@
 /** @jsx React.DOM */
 var React = require('react');
 
+var utils = require("./utils");
 
 /**
  * React Component for Cell.
@@ -141,37 +142,13 @@ var RDTCell = React.createClass({
     },
 
     getValue : function() {
-        var value = "";
+
         var path = this.props.path;
         var record = this.state.record;
         var property = this.props.property;
-        /**
-         * By default, we will use record[property] if path is not given.
-         * If path is provided and is a string then will uspltle record[path]
-         * If path is provided and is a function then we will call the function.
-         * else we dont do anything
-         */
-        if ( typeof property === 'string' ) {
-            if ( !path ) {
-                value = record[property];
-                if ( typeof(value) === 'function' ) {
-                    value = value.call(record);
-                }
-            } else {
-                if ( typeof path === 'string' ) {
-                    value =  path.split(".").reduce(function(previous,current) {
-                        if ( !previous || !current ) {
-                            return null;
-                        }
-                        return previous[current];
-                    },record);// record[path];
-                } else {
-                    //TODO: function check
-                    value = path(property,record);
-                }
-            }
-        }
-        return value;
+        
+        return utils.extractValue(property,path,record);
+
     },
 
     render: function() {

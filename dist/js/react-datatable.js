@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var DataSource = __webpack_require__(2);
 
-	var RDT = __webpack_require__(4)(__webpack_require__(1),__webpack_require__(3));
+	var RDT = __webpack_require__(9)(__webpack_require__(1),__webpack_require__(3));
 	RDT.datasource = function(data,mapper) {
 	    return new DataSource(data,mapper);
 	}
@@ -81,7 +81,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	"use strict";
 
 	var EventEmitter = __webpack_require__(10).EventEmitter;
-
+	var utils = __webpack_require__(13);
 
 	/**
 	 * Create a new datasource using records array as a backing dataset
@@ -89,7 +89,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param records
 	 * @constructor
 	 */
-	var DataSource = function(records,mapper) {
+	var DataSource = function(records,mapper,config) {
 	    
 	    if ( records instanceof Array ) {
 	        if (mapper) {
@@ -98,11 +98,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.records = records;
 	        }
 	    } else {
-	        var dsRef =  records;
 	        var dataField = records["data"];
 	        var data = records["datasource"];
 	        this.records =  data[dataField];
 	    }
+	    this.config = config;
+	    if ( config ) {
+	        this.properyConfigMap = {};
+	        this.config.cols.forEach( function(col)  {
+	            this.properyConfigMap[col.property] = col;
+	        }.bind(this));
+	    }
+	    this.sortedInfo = null;
 	};
 
 
@@ -139,6 +146,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * FIXME: Still broken, we need to be able to sort depending on type
+	 *
+	 * @param property
+	 * @param direction
+	 */
+	DataSource.prototype.sort = function(property,direction) {
+	     this.records.sort(  function( o1,o2)   {
+	        var reverseDir = 1;
+	         if ( direction === "-1" ) {
+	             reverseDir = -1;
+	             
+	         }
+	        var col = this.properyConfigMap[property];
+	        
+	        var v1 = utils.extractValue(property,col.path,o1);
+	        var v2 = utils.extractValue(property,col.path,o2);
+	      
+	        if ( v1  ) {
+	            return v1.localeCompare(v2) * reverseDir;
+	        } else if ( v2 ) {
+	            return v2.localeCompare(v1) * reverseDir;
+	        } else {
+	            return 0;
+	        }
+	        
+	    }.bind(this));
+	    
+	    this.sortedInfo = { property: property, direction: direction};
+
+	};
+
+	/**
 	 * Maps the actual page
 	 * The mapper function gets the record, currentIndex and actual index
 	 */
@@ -146,7 +185,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if ( !pageState ) {
 	        return this.records.map(mapper);
 	    }
-
 
 	    var result = [];
 	    var counter = 0;
@@ -214,12 +252,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var React = __webpack_require__(1);
 
 	var DataSource = __webpack_require__(2);
-	var Pager = __webpack_require__(5);
+	var Pager = __webpack_require__(4);
 
-	var RDTRow = __webpack_require__(6);
-	var RDTColumn = __webpack_require__(7);
-	var RDTBody = __webpack_require__(8);
-	var Paginator = __webpack_require__(9);
+	var RDTRow = __webpack_require__(5);
+	var RDTColumn = __webpack_require__(6);
+	var RDTBody = __webpack_require__(7);
+	var Paginator = __webpack_require__(8);
 
 
 
@@ -257,19 +295,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	var RDT = React.createClass({displayName: "RDT",
 	    
 	    
+	    onClick : function(e) {
+
+	        var el = e.target;
+	        var action = el.getAttribute("data-rdt-action");
+	        if ( action === "sort" ) {
+	            var property= el.getAttribute("data-col-property");
+	            var direction = el.getAttribute("data-sort-direction");
+	            this.state.datasource.sort(property,direction);
+	            this.forceUpdate();
+	        }
+	    },
+	    /**
+	     * Sort using the property
+	     * @param property
+	     */
+	    sort : function(property) {
+
+	    },
+	    
 	    componentWillReceiveProps : function(newProps) {
 	        this.componentDidMount(newProps);
-	        /*
-	        if ( newProps.datasource ) {
-	            this.ds = newProps.datasource;
-	        }
-	        this.ds.on("recordAdded",this.onDsChangeEvent);
-	        this.ds.on("recordUpdated",this.onDsChangeEvent);
-	        if ( newProps.config.pager ) {
-	            this.pager = new Pager(1,newProps.config.pager.rowsPerPage,this.ds);
-	            return { pager : this.pager.state()  }
-	        }
-	        return { pager : null }; */
 	    },
 	    nextPage : function() {
 	        if ( this.pager ) {
@@ -294,26 +340,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    },
 
-	    componentDidMount : function(props) {
-	        var propsToUse = this.props;
-	        if ( props ) {
-	            propsToUse = props;
-	        }
-	        if ( propsToUse.data  ) {
-	            this.setState({datasource: new DataSource(propsToUse.data)});
-	        } else if ( propsToUse.datasource ) {
-	            this.setDataSource(propsToUse.datasource);
-	        }
-	    },
+
 	    getInitialState: function () {
 
-	        var ds = new DataSource([]);
+	        var propsToUse = this.props;
+	        var datasource =null;
+	        if ( propsToUse.data  ) {
+	            datasource = new DataSource(propsToUse.data,this.props.mapper,this.props.config);
+	        } else if ( propsToUse.datasource ) {
+	            datasource = propsToUse.datasource;
+	        }
+	        
 	        var pager =  null; 
 	        if (this.props.config.pager  )
 	        if ( this.props.config.pager ) {
 	            pager = new Pager(1, this.props.config.pager.rowsPerPage, this.ds);
 	        }
-	        return { datasource : ds, pager :pager };
+	        return { datasource: datasource,pager :pager };
 	        
 	    },
 
@@ -338,10 +381,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        return (
-	            React.createElement("div", null, 
+	            React.createElement("div", {onClick: this.onClick}, 
 	                React.createElement("div", {className: "rdt-container", ref: "container"}, 
 	                    React.createElement("table", {className: tableStyle['table']}, 
-	                        React.createElement(RDTColumn, {config: config}), 
+	                        React.createElement(RDTColumn, {datasource: datasource, config: config}), 
 	                        React.createElement(RDTBody, {config: config, datasource: datasource, pager: this.state.pager})
 	                    )
 	                ), 
@@ -349,7 +392,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            )
 	        )
 
-	    },
+	    }
 
 
 
@@ -360,18 +403,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {*|Function|datasource|RDT.getInitialState.datasource|paginator.datasource|RDT.render.datasource}
 	     */
 	    
-
+	/*
 	    setDataSource : function(datasource) {
 
 	        if ( typeof datasource.then === "function" ) {
 	            datasource.then(function(data) {
-	                this.setState({datasource: new DataSource(data,this.props.mapper)});
+	                this.setState({datasource: new DataSource(data,this.props.mapper,this.props.config)});
 	            }.bind(this));
 	        } else {
 	            this.setState({datasource: datasource});
 
 	        }
-	    }
+	    }*/
 	    
 	});
 
@@ -381,80 +424,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*globals require,module,React */
-	"use strict";
-
-	/**
-	 * React instance creation is a bit noisy. Use this on react a library such
-	 * that its more direct to the point when creating new instance. E.g.
-	 *
-	   React.render(React.createElement(ViewPager,{ views : ["page11","page22","page33"], visible:"page11"}),
-	            document.getElementById("viewpager-container2"));
-	 * 
-	 * to something like
-	 *
-	 * ViewPager.render({ views : ["page1","page2","page3"], visible:"page1"},"viewpager-container");
-	 * or
-	 * ViewPager.render("viewpager-container");
-	 * 
-	 * If your are exposing a library then :
-	 * 
-	 * var renderWrapper = require("react-render");
-	 * var MyReactComponent = React.createClass... 
-	 * 
-	 * module.exports = renderWrapper(React,MyReactComponent)
-	 *
-	 */
-
-	/**
-	 * 
-	 * Shortcut to React.createElement(cls,option) 
-	 *
-	 */
-	var elWrapper = function(React,ReactClass,option) {
-	    return React.createElement(ReactClass,option);
-	};
-	    
-	var renderWrapper = function(React,ReactClass,options,el) {
-	    
-	    var ouroption = {};
-	    //if he passed an html element or a string on the first argument
-	    //then we assume he wants no options
-	    var ourEl = null;
-	    
-	    //check if its actually an element
-	    if ( ( options.tagName && options.nodeName && (typeof options.nodeType === 'number') ) 
-	        || ( typeof options === 'string' ) ) {
-	        ourEl = options;
-	    } else {
-	        ouroption = options;
-	        ourEl = ( typeof el === 'string') ? document.getElementById(el) : el;
-	    }
-
-	    return React.render(elWrapper(React,ReactClass,ouroption), ourEl);
-	};
-
-	var RenderWrapper = function(React,ReactClass) {
-
-	    return {
-	        cls : ReactClass,
-	        el : function(options) {
-	            return elWrapper(React,ReactClass,options);
-	        },
-	        render : function(options,el) {
-	            return renderWrapper(React,ReactClass,options,el)
-	        }
-	    }
-
-	};
-
-	module.exports = RenderWrapper;
-
-
-/***/ },
-/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -528,7 +497,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Pager;
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -582,28 +551,81 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTRow;
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
 	var React = __webpack_require__(1);
 
+	var DIRECTION_UP = "1";
+	var DIRECTION_DOWN = "-1";
+
+	var SortControl = React.createClass({displayName: "SortControl",
+	   
+
+	    
+	    getInitialState : function() {
+	        return { direction: this.props.direction, isSortedColumn : this.props.isSortedColumn };
+	    },
+	    
+	    componentWillReceiveProps : function(next) {
+	        if ( this.props.isSortedColumn !== next.isSortedColumn ) {
+	            this.setState({direction: next.direction, isSortedColumn : next.isSortedColumn });
+	        }
+	    },
+	    
+	    render : function() {
+	       
+	        var arrowUp = this.state.isSortedColumn && ( this.state.direction === DIRECTION_UP )
+	                ? "rdt-arrow-up-active" : "rdt-arrow-up-inactive";
+	        var arrowDown = this.state.isSortedColumn && ( this.state.direction === DIRECTION_DOWN )
+	            ? "rdt-arrow-down-active" : "rdt-arrow-down-inactive";
+	        
+
+	        
+	        return (React.createElement("div", {style:  { float: "right"} }, React.createElement("div", {
+	            "data-rdt-action": "sort", "data-col-property": this.props.col.property, "data-sort-direction": DIRECTION_UP, className: "rdt-arrow-up " + arrowUp}), React.createElement("div", {style: {"marginBottom": "5px"}}), 
+	                React.createElement("div", {"data-rdt-action": "sort", "data-col-property": this.props.col.property, "data-sort-direction": DIRECTION_DOWN, className: "rdt-arrow-down " + arrowDown})))
+	    } 
+	    
+	});
 
 	/**
 	 * React Component for Columns
 	 *
 	 */
 	var RDTColumn = React.createClass({displayName: "RDTColumn",
+	    
+	    
+	    getInitialState : function() {
+	      return { datasource : this.props.datasource };
+	    },
 
 	    render: function() {
 
 	        var cols = this.props.config.cols;
+	        var datasource = this.state.datasource;
+	        
+	        var sortedInfo = datasource.sortedInfo;
+	        console.log(datasource);
+	       
 	        return(
-	            React.createElement("thead", null, 
+	            React.createElement("thead", {onClick: this.onClick}, 
 	                React.createElement("tr", null, 
 	                    cols.map(function(col,idx) {
-	                        return React.createElement("td", {key: idx + 100}, col.header)
-	                    })
+	                        var isSortedColumn = false;
+	                        var direction = null;
+
+	                        if ( sortedInfo && sortedInfo.property === col.property ) {
+	                            isSortedColumn = true;
+	                            direction = sortedInfo.direction;
+	                        }
+	                        return (
+	                            React.createElement("td", {"data-th-key": col.property, key: col.property + "-th-" + idx}, 
+	                                React.createElement("div", null, React.createElement("span", null, col.header), React.createElement(SortControl, {isSortedColumn: isSortedColumn, direction: direction, col: col}))
+	                            )
+	                        )
+	                    }.bind(this))
 	                
 	                )
 	            )
@@ -617,12 +639,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
 	var React = __webpack_require__(1);
-	var RDTRow = __webpack_require__(6);
+	var RDTRow = __webpack_require__(5);
 
 	/**
 	 * React Component for Body
@@ -668,7 +690,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTBody;
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -732,6 +754,80 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	module.exports = Paginator;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*globals require,module,React */
+	"use strict";
+
+	/**
+	 * React instance creation is a bit noisy. Use this on react a library such
+	 * that its more direct to the point when creating new instance. E.g.
+	 *
+	   React.render(React.createElement(ViewPager,{ views : ["page11","page22","page33"], visible:"page11"}),
+	            document.getElementById("viewpager-container2"));
+	 * 
+	 * to something like
+	 *
+	 * ViewPager.render({ views : ["page1","page2","page3"], visible:"page1"},"viewpager-container");
+	 * or
+	 * ViewPager.render("viewpager-container");
+	 * 
+	 * If your are exposing a library then :
+	 * 
+	 * var renderWrapper = require("react-render");
+	 * var MyReactComponent = React.createClass... 
+	 * 
+	 * module.exports = renderWrapper(React,MyReactComponent)
+	 *
+	 */
+
+	/**
+	 * 
+	 * Shortcut to React.createElement(cls,option) 
+	 *
+	 */
+	var elWrapper = function(React,ReactClass,option) {
+	    return React.createElement(ReactClass,option);
+	};
+	    
+	var renderWrapper = function(React,ReactClass,options,el) {
+	    
+	    var ouroption = {};
+	    //if he passed an html element or a string on the first argument
+	    //then we assume he wants no options
+	    var ourEl = null;
+	    
+	    //check if its actually an element
+	    if ( ( options.tagName && options.nodeName && (typeof options.nodeType === 'number') ) 
+	        || ( typeof options === 'string' ) ) {
+	        ourEl = options;
+	    } else {
+	        ouroption = options;
+	        ourEl = ( typeof el === 'string') ? document.getElementById(el) : el;
+	    }
+
+	    return React.render(elWrapper(React,ReactClass,ouroption), ourEl);
+	};
+
+	var RenderWrapper = function(React,ReactClass) {
+
+	    return {
+	        cls : ReactClass,
+	        el : function(options) {
+	            return elWrapper(React,ReactClass,options);
+	        },
+	        render : function(options,el) {
+	            return renderWrapper(React,ReactClass,options,el)
+	        }
+	    }
+
+	};
+
+	module.exports = RenderWrapper;
+
 
 /***/ },
 /* 10 */
@@ -1047,6 +1143,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/** @jsx React.DOM */
 	var React = __webpack_require__(1);
 
+	var utils = __webpack_require__(13);
 
 	/**
 	 * React Component for Cell.
@@ -1187,37 +1284,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    getValue : function() {
-	        var value = "";
+
 	        var path = this.props.path;
 	        var record = this.state.record;
 	        var property = this.props.property;
-	        /**
-	         * By default, we will use record[property] if path is not given.
-	         * If path is provided and is a string then will uspltle record[path]
-	         * If path is provided and is a function then we will call the function.
-	         * else we dont do anything
-	         */
-	        if ( typeof property === 'string' ) {
-	            if ( !path ) {
-	                value = record[property];
-	                if ( typeof(value) === 'function' ) {
-	                    value = value.call(record);
-	                }
-	            } else {
-	                if ( typeof path === 'string' ) {
-	                    value =  path.split(".").reduce(function(previous,current) {
-	                        if ( !previous || !current ) {
-	                            return null;
-	                        }
-	                        return previous[current];
-	                    },record);// record[path];
-	                } else {
-	                    //TODO: function check
-	                    value = path(property,record);
-	                }
-	            }
-	        }
-	        return value;
+	        
+	        return utils.extractValue(property,path,record);
+
 	    },
 
 	    render: function() {
@@ -1245,6 +1318,52 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	module.exports = RDTCell;
 
+
+/***/ },
+/* 12 */,
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use require";
+
+	module.exports = {
+	    
+	    extractValue : function(property,path,record) {
+
+
+	        var value = "";
+
+	        /**
+	         * By default, we will use record[property] if path is not given.
+	         * If path is provided and is a string then will uspltle record[path]
+	         * If path is provided and is a function then we will call the function.
+	         * else we dont do anything
+	         */
+	        if ( typeof property === 'string' ) {
+	            if ( !path ) {
+	                value = record[property];
+	                if ( typeof(value) === 'function' ) {
+	                    value = value.call(record);
+	                }
+	            } else {
+	                if ( typeof path === 'string' ) {
+	                    value =  path.split(".").reduce(function(previous,current) {
+	                        if ( !previous || !current ) {
+	                            return null;
+	                        }
+	                        return previous[current];
+	                    },record);// record[path];
+	                } else {
+	                    //TODO: function check
+	                    value = path(property,record);
+	                }
+	            }
+	        }
+	        return value;
+	        
+	    }
+	    
+	}
 
 /***/ }
 /******/ ])

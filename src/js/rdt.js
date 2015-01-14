@@ -45,19 +45,27 @@ var TABLE_CSS = {
 var RDT = React.createClass({
     
     
+    onClick : function(e) {
+
+        var el = e.target;
+        var action = el.getAttribute("data-rdt-action");
+        if ( action === "sort" ) {
+            var property= el.getAttribute("data-col-property");
+            var direction = el.getAttribute("data-sort-direction");
+            this.state.datasource.sort(property,direction);
+            this.forceUpdate();
+        }
+    },
+    /**
+     * Sort using the property
+     * @param property
+     */
+    sort : function(property) {
+
+    },
+    
     componentWillReceiveProps : function(newProps) {
         this.componentDidMount(newProps);
-        /*
-        if ( newProps.datasource ) {
-            this.ds = newProps.datasource;
-        }
-        this.ds.on("recordAdded",this.onDsChangeEvent);
-        this.ds.on("recordUpdated",this.onDsChangeEvent);
-        if ( newProps.config.pager ) {
-            this.pager = new Pager(1,newProps.config.pager.rowsPerPage,this.ds);
-            return { pager : this.pager.state()  }
-        }
-        return { pager : null }; */
     },
     nextPage : function() {
         if ( this.pager ) {
@@ -82,26 +90,23 @@ var RDT = React.createClass({
         }
     },
 
-    componentDidMount : function(props) {
-        var propsToUse = this.props;
-        if ( props ) {
-            propsToUse = props;
-        }
-        if ( propsToUse.data  ) {
-            this.setState({datasource: new DataSource(propsToUse.data)});
-        } else if ( propsToUse.datasource ) {
-            this.setDataSource(propsToUse.datasource);
-        }
-    },
+
     getInitialState: function () {
 
-        var ds = new DataSource([]);
+        var propsToUse = this.props;
+        var datasource =null;
+        if ( propsToUse.data  ) {
+            datasource = new DataSource(propsToUse.data,this.props.mapper,this.props.config);
+        } else if ( propsToUse.datasource ) {
+            datasource = propsToUse.datasource;
+        }
+        
         var pager =  null; 
         if (this.props.config.pager  )
         if ( this.props.config.pager ) {
             pager = new Pager(1, this.props.config.pager.rowsPerPage, this.ds);
         }
-        return { datasource : ds, pager :pager };
+        return { datasource: datasource,pager :pager };
         
     },
 
@@ -126,10 +131,10 @@ var RDT = React.createClass({
         }
 
         return (
-            <div>
+            <div onClick={this.onClick}>
                 <div className="rdt-container" ref="container">
                     <table className={tableStyle['table']}>
-                        <RDTColumn config={config} />
+                        <RDTColumn datasource={datasource} config={config} />
                         <RDTBody config={config} datasource={datasource} pager={this.state.pager}/>
                     </table>
                 </div>
@@ -137,7 +142,7 @@ var RDT = React.createClass({
             </div>
         )
 
-    },
+    }
 
 
 
@@ -148,18 +153,18 @@ var RDT = React.createClass({
      * @returns {*|Function|datasource|RDT.getInitialState.datasource|paginator.datasource|RDT.render.datasource}
      */
     
-
+/*
     setDataSource : function(datasource) {
 
         if ( typeof datasource.then === "function" ) {
             datasource.then(function(data) {
-                this.setState({datasource: new DataSource(data,this.props.mapper)});
+                this.setState({datasource: new DataSource(data,this.props.mapper,this.props.config)});
             }.bind(this));
         } else {
             this.setState({datasource: datasource});
 
         }
-    }
+    }*/
     
 });
 
