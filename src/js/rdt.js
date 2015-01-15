@@ -63,10 +63,7 @@ var RDT = React.createClass({
     sort : function(property) {
 
     },
-    
-    componentWillReceiveProps : function(newProps) {
-        this.componentDidMount(newProps);
-    },
+
     nextPage : function() {
         if ( this.pager ) {
             this.pager = this.pager.next();
