@@ -61,9 +61,9 @@ module.exports = {
             }
         } else  { //string sort
             if ( val1  ) {
-                return val1.localeCompare(val2) * reverseDir;
+                return val1.localeCompare(val2) * direction;
             } else if ( val2 ) {
-                return val2.localeCompare(val1) * reverseDir;
+                return val2.localeCompare(val1) * direction;
             } else {
                 return 0;
             }
