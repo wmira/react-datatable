@@ -51,8 +51,6 @@ var RDTColumn = React.createClass({
         var datasource = this.state.datasource;
         
         var sortedInfo = datasource.sortedInfo;
-        console.log(datasource);
-       
         return(
             <thead onClick={this.onClick}>
                 <tr>{
