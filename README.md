@@ -3,6 +3,8 @@ RDT - DataTable Written in React
 
 **RDT is still in early stages of development. Not even alpha quality.**
 
+Demo: [http://wmira.github.io/react-datatable/](http://wmira.github.io/react-datatable/)
+
 A simple datagrid/datatable written with Facebook's React view framework.
 
 Features
