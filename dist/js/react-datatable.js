@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var DataSource = __webpack_require__(2);
 
-	var RDT = __webpack_require__(9)(__webpack_require__(1),__webpack_require__(3));
+	var RDT = __webpack_require__(4)(__webpack_require__(1),__webpack_require__(3));
 	RDT.datasource = function(data,mapper) {
 	    return new DataSource(data,mapper);
 	}
@@ -80,8 +80,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	/*globals require,module */
 	"use strict";
 
-	var EventEmitter = __webpack_require__(10).EventEmitter;
-	var utils = __webpack_require__(13);
+	var EventEmitter = __webpack_require__(11).EventEmitter;
+	var utils = __webpack_require__(5);
 
 	/**
 	 * Create a new datasource using records array as a backing dataset
@@ -152,24 +152,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param direction
 	 */
 	DataSource.prototype.sort = function(property,direction) {
-	     this.records.sort(  function( o1,o2)   {
+	    
+	    this.records.sort(  function( o1,o2)   {
 	        var reverseDir = 1;
-	         if ( direction === "-1" ) {
+	        if ( direction === "-1" ) {
 	             reverseDir = -1;
-	             
-	         }
+	        }
 	        var col = this.properyConfigMap[property];
 	        
 	        var v1 = utils.extractValue(property,col.path,o1);
 	        var v2 = utils.extractValue(property,col.path,o2);
-	      
-	        if ( v1  ) {
-	            return v1.localeCompare(v2) * reverseDir;
-	        } else if ( v2 ) {
-	            return v2.localeCompare(v1) * reverseDir;
-	        } else {
-	            return 0;
-	        }
+	        
+	         
+	        var type = utils.extractSortableType(v1,v2);
+	        return utils.compare(type,v1,v2,reverseDir);
 	        
 	    }.bind(this));
 	    
@@ -210,7 +206,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var path = config.path ? config.path : property;
 	    var setter = config.setter ?
 
-	        //setter can be a string or an actual function derp
+	        //setter can be a string or an actual function -- derp
 	        function(newValue,property,config) {
 	            var thesetter = config.setter;
 	            if ( typeof(config.setter) === 'string' ) {
@@ -252,12 +248,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var React = __webpack_require__(1);
 
 	var DataSource = __webpack_require__(2);
-	var Pager = __webpack_require__(4);
+	var Pager = __webpack_require__(6);
 
-	var RDTRow = __webpack_require__(5);
-	var RDTColumn = __webpack_require__(6);
-	var RDTBody = __webpack_require__(7);
-	var Paginator = __webpack_require__(8);
+	var RDTRow = __webpack_require__(7);
+	var RDTColumn = __webpack_require__(8);
+	var RDTBody = __webpack_require__(9);
+	var Paginator = __webpack_require__(10);
 
 
 
@@ -426,6 +422,160 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/*globals require,module,React */
+	"use strict";
+
+	/**
+	 * React instance creation is a bit noisy. Use this on react a library such
+	 * that its more direct to the point when creating new instance. E.g.
+	 *
+	   React.render(React.createElement(ViewPager,{ views : ["page11","page22","page33"], visible:"page11"}),
+	            document.getElementById("viewpager-container2"));
+	 * 
+	 * to something like
+	 *
+	 * ViewPager.render({ views : ["page1","page2","page3"], visible:"page1"},"viewpager-container");
+	 * or
+	 * ViewPager.render("viewpager-container");
+	 * 
+	 * If your are exposing a library then :
+	 * 
+	 * var renderWrapper = require("react-render");
+	 * var MyReactComponent = React.createClass... 
+	 * 
+	 * module.exports = renderWrapper(React,MyReactComponent)
+	 *
+	 */
+
+	/**
+	 * 
+	 * Shortcut to React.createElement(cls,option) 
+	 *
+	 */
+	var elWrapper = function(React,ReactClass,option) {
+	    return React.createElement(ReactClass,option);
+	};
+	    
+	var renderWrapper = function(React,ReactClass,options,el) {
+	    
+	    var ouroption = {};
+	    //if he passed an html element or a string on the first argument
+	    //then we assume he wants no options
+	    var ourEl = null;
+	    
+	    //check if its actually an element
+	    if ( ( options.tagName && options.nodeName && (typeof options.nodeType === 'number') ) 
+	        || ( typeof options === 'string' ) ) {
+	        ourEl = options;
+	    } else {
+	        ouroption = options;
+	        ourEl = ( typeof el === 'string') ? document.getElementById(el) : el;
+	    }
+
+	    return React.render(elWrapper(React,ReactClass,ouroption), ourEl);
+	};
+
+	var RenderWrapper = function(React,ReactClass) {
+
+	    return {
+	        cls : ReactClass,
+	        el : function(options) {
+	            return elWrapper(React,ReactClass,options);
+	        },
+	        render : function(options,el) {
+	            return renderWrapper(React,ReactClass,options,el)
+	        }
+	    }
+
+	};
+
+	module.exports = RenderWrapper;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use require";
+
+	module.exports = {
+	    
+	    extractValue : function(property,path,record) {
+
+
+	        var value = "";
+
+	        /**
+	         * By default, we will use record[property] if path is not given.
+	         * If path is provided and is a string then will uspltle record[path]
+	         * If path is provided and is a function then we will call the function.
+	         * else we dont do anything
+	         */
+	        if ( typeof property === 'string' ) {
+	            if ( !path ) {
+	                value = record[property];
+	                if ( typeof(value) === 'function' ) {
+	                    value = value.call(record);
+	                }
+	            } else {
+	                if ( typeof path === 'string' ) {
+	                    value =  path.split(".").reduce(function(previous,current) {
+	                        if ( !previous || !current ) {
+	                            return null;
+	                        }
+	                        return previous[current];
+	                    },record);// record[path];
+	                } else {
+	                    //TODO: function check
+	                    value = path(property,record);
+	                }
+	            }
+	        }
+	        return value;
+	        
+	    },
+	    extractSortableType : function(v1,v2) {
+	      if ( typeof v1 === 'string' && typeof v2 === 'string') {
+	          return String;
+	      } else if ( typeof v1 === 'number' && typeof v2 === 'number') {
+	          return Number;
+	      } else if ( v1 instanceof Date && v2 instanceof Date ) {
+	          return Date;
+	      } else {
+	          return null;
+	      }
+	        
+	    },
+	    compare : function(type,val1,val2,direction) {
+	        if ( type === Number ) {
+	            if ( val1 && val2 ) {
+	                return (val2 - val1) * direction;
+	            } else if ( val1 && !val2 ) {
+	                return val1 * direction;
+	            } else if ( !val1 && val2 ) {
+	                return val2 * direction;
+	            } else {
+	                return 0;
+	            }
+	        } else  { //string sort
+	            if ( val1  ) {
+	                return val1.localeCompare(val2) * reverseDir;
+	            } else if ( val2 ) {
+	                return val2.localeCompare(val1) * reverseDir;
+	            } else {
+	                return 0;
+	            }
+	        }
+	        return 0;
+	        //FIXME how about date? slacker!
+	    }
+	    
+	}
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
 	
 	'use strict';
 
@@ -497,13 +647,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Pager;
 
 /***/ },
-/* 5 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
 	var React = __webpack_require__(1);
 
-	var RDTCell = __webpack_require__(11);
+	var RDTCell = __webpack_require__(12);
 
 	/**
 	 * React Component as a row
@@ -519,7 +669,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    getInitialState: function() {
 	        return { record : this.props.record };
 	    },
-
+	    
+	    
 
 	    /**
 	     * TODO: we need to reevaluate.
@@ -551,7 +702,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTRow;
 
 /***/ },
-/* 6 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -639,12 +790,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
 	var React = __webpack_require__(1);
-	var RDTRow = __webpack_require__(5);
+	var RDTRow = __webpack_require__(7);
 
 	/**
 	 * React Component for Body
@@ -690,7 +841,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTBody;
 
 /***/ },
-/* 8 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -756,81 +907,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Paginator;
 
 /***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*globals require,module,React */
-	"use strict";
-
-	/**
-	 * React instance creation is a bit noisy. Use this on react a library such
-	 * that its more direct to the point when creating new instance. E.g.
-	 *
-	   React.render(React.createElement(ViewPager,{ views : ["page11","page22","page33"], visible:"page11"}),
-	            document.getElementById("viewpager-container2"));
-	 * 
-	 * to something like
-	 *
-	 * ViewPager.render({ views : ["page1","page2","page3"], visible:"page1"},"viewpager-container");
-	 * or
-	 * ViewPager.render("viewpager-container");
-	 * 
-	 * If your are exposing a library then :
-	 * 
-	 * var renderWrapper = require("react-render");
-	 * var MyReactComponent = React.createClass... 
-	 * 
-	 * module.exports = renderWrapper(React,MyReactComponent)
-	 *
-	 */
-
-	/**
-	 * 
-	 * Shortcut to React.createElement(cls,option) 
-	 *
-	 */
-	var elWrapper = function(React,ReactClass,option) {
-	    return React.createElement(ReactClass,option);
-	};
-	    
-	var renderWrapper = function(React,ReactClass,options,el) {
-	    
-	    var ouroption = {};
-	    //if he passed an html element or a string on the first argument
-	    //then we assume he wants no options
-	    var ourEl = null;
-	    
-	    //check if its actually an element
-	    if ( ( options.tagName && options.nodeName && (typeof options.nodeType === 'number') ) 
-	        || ( typeof options === 'string' ) ) {
-	        ourEl = options;
-	    } else {
-	        ouroption = options;
-	        ourEl = ( typeof el === 'string') ? document.getElementById(el) : el;
-	    }
-
-	    return React.render(elWrapper(React,ReactClass,ouroption), ourEl);
-	};
-
-	var RenderWrapper = function(React,ReactClass) {
-
-	    return {
-	        cls : ReactClass,
-	        el : function(options) {
-	            return elWrapper(React,ReactClass,options);
-	        },
-	        render : function(options,el) {
-	            return renderWrapper(React,ReactClass,options,el)
-	        }
-	    }
-
-	};
-
-	module.exports = RenderWrapper;
-
-
-/***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -1137,13 +1214,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
 	var React = __webpack_require__(1);
 
-	var utils = __webpack_require__(13);
+	var utils = __webpack_require__(5);
 
 	/**
 	 * React Component for Cell.
@@ -1318,52 +1395,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	module.exports = RDTCell;
 
-
-/***/ },
-/* 12 */,
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use require";
-
-	module.exports = {
-	    
-	    extractValue : function(property,path,record) {
-
-
-	        var value = "";
-
-	        /**
-	         * By default, we will use record[property] if path is not given.
-	         * If path is provided and is a string then will uspltle record[path]
-	         * If path is provided and is a function then we will call the function.
-	         * else we dont do anything
-	         */
-	        if ( typeof property === 'string' ) {
-	            if ( !path ) {
-	                value = record[property];
-	                if ( typeof(value) === 'function' ) {
-	                    value = value.call(record);
-	                }
-	            } else {
-	                if ( typeof path === 'string' ) {
-	                    value =  path.split(".").reduce(function(previous,current) {
-	                        if ( !previous || !current ) {
-	                            return null;
-	                        }
-	                        return previous[current];
-	                    },record);// record[path];
-	                } else {
-	                    //TODO: function check
-	                    value = path(property,record);
-	                }
-	            }
-	        }
-	        return value;
-	        
-	    }
-	    
-	}
 
 /***/ }
 /******/ ])

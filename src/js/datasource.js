@@ -74,24 +74,20 @@ DataSource.prototype.length = function() {
  * @param direction
  */
 DataSource.prototype.sort = function(property,direction) {
-     this.records.sort(  ( o1,o2 ) => {
+    
+    this.records.sort(  ( o1,o2 ) => {
         var reverseDir = 1;
-         if ( direction === "-1" ) {
+        if ( direction === "-1" ) {
              reverseDir = -1;
-             
-         }
+        }
         var col = this.properyConfigMap[property];
         
         var v1 = utils.extractValue(property,col.path,o1);
         var v2 = utils.extractValue(property,col.path,o2);
-      
-        if ( v1  ) {
-            return v1.localeCompare(v2) * reverseDir;
-        } else if ( v2 ) {
-            return v2.localeCompare(v1) * reverseDir;
-        } else {
-            return 0;
-        }
+        
+         
+        var type = utils.extractSortableType(v1,v2);
+        return utils.compare(type,v1,v2,reverseDir);
         
     });
     
@@ -132,7 +128,7 @@ DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config)
     var path = config.path ? config.path : property;
     var setter = config.setter ?
 
-        //setter can be a string or an actual function derp
+        //setter can be a string or an actual function -- derp
         function(newValue,property,config) {
             var thesetter = config.setter;
             if ( typeof(config.setter) === 'string' ) {

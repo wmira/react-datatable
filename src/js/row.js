@@ -17,7 +17,8 @@ var RDTRow = React.createClass({
     getInitialState: function() {
         return { record : this.props.record };
     },
-
+    
+    
 
     /**
      * TODO: we need to reevaluate.

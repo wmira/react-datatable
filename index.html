@@ -17,7 +17,6 @@
     </head>
 <body>
     <br/>
-    <button id="swapper" class="btn btn-primary">Swap</button>
     <div class="container">
         <div class="row">
             <div class="col-lg-10">
@@ -80,28 +79,26 @@
     var config = {
         style: 'bootstrap',
         cols: [
-            { property: "action", header: "" , formatter : function(value,property,record,react) {return react.createElement("div",null,"Edit")}, clickHandler: function() { console.log("clicked") } },
+            //{ property: "action",  sortable: false, header: "" , formatter : function(value,property,record,react) {return react.createElement("div",null,"Edit")}, clickHandler: function() { console.log("clicked") } },
             { editable: true, property: "name", header: "Name" },
             { property: "position", header: "Position"},
             { property: "office", resolve: "",  header: "Office" },
             { property: "age", header: "Age", editable: true, setter: function(newValue,property,config) {
                 if ( newValue <= 18 ) {
                     alert("Too young!");
+                    this.age = newValue;
                 } else {
                     this.age = newValue;
                 }
             }},
-            { property: "tax", path: computeTax, header: "Tax", formatter: numberFormatter},
+            { property: "tax", path: computeTax, header: "Tax", formatter: numberFormatter, type: Number},
             { editable: true, property: "salary", header: "Salary", formatter: numberFormatter }
         ]
     };
 
-    RDT.render({data: data1, config: config},"content");
+    RDT.render({data: data2, config: config},"content");
 
 
-    document.getElementById("swapper").addEventListener("click",function() {
-        RDT.render({data: data1, config: config},"content")
-    });
 
 </script>
 
