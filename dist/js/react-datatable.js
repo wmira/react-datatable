@@ -758,8 +758,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var datasource = this.state.datasource;
 	        
 	        var sortedInfo = datasource.sortedInfo;
-	        console.log(datasource);
-	       
 	        return(
 	            React.createElement("thead", {onClick: this.onClick}, 
 	                React.createElement("tr", null, 
