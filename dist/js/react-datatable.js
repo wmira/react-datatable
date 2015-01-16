@@ -94,6 +94,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	var createMapper = function(__userMapper,config) {
+	    
+	    var colsMap = utils.colsToMap(config);
 	    return function(rawRec,index) {
 	        var recToMap = null;
 	        if ( typeof __userMapper === 'function' ) {
@@ -101,7 +103,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            recToMap = rawRec;
 	        }
-	        return new record(index,recToMap,config);
+	        return new record(index,recToMap,colsMap);
 	    };  
 	};
 
@@ -190,7 +192,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }.bind(this));
 	    
 	    this.emit(EVENTS.RECORDS_SORTED, { property: property, direction : direction});
-	    //this.sortedInfo = { property: property, direction: direction};
+
 
 	};
 
@@ -225,38 +227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var record = this.records[recordIdx];
 	    record.update(property,newValue);
-	    /*
-	    var path = config.path ? config.path : property;
-	    var setter = config.setter ?
 
-	        //setter can be a string or an actual function -- derp
-	        function(newValue,property,config) {
-	            var thesetter = config.setter;
-	            if ( typeof(config.setter) === 'string' ) {
-	                record[config.setter](newValue, property, config);
-	            } else {
-	                //assume function
-
-	                thesetter.call(record,newValue, property, config);
-	            }
-
-	        }:
-	        function() {
-	            path.split(".").reduce(function(prev,current,index,arr) {
-	                if ( index === (arr.length - 1) ) {
-	                    //we are at the end
-	                    if ( typeof prev[current] === 'function' ) {
-	                        prev[current](newValue);
-	                    } else {
-	                        prev[current] = newValue;
-	                    }
-	                } else {
-	                    return prev[current];
-	                }
-	            },record);
-	        } ;
-	    setter.call(record,newValue,property,config);
-	    */
 	    //FIXME, we should get current value and pass as old value
 	    this.emit(EVENTS.RECORD_UPDATED,record,recordIdx,property,newValue);
 	};
@@ -270,7 +241,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/** @jsx React.DOM */
 	/*globals require,module */
-	/* jshint -W097 */
+	/* jshint -W097, esnext: true */
 	"use strict";
 
 	var React = __webpack_require__(1);
@@ -520,15 +491,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Wraps a record within a datasource
 	 *  
 	 */
-	var record = function(index,__record,config) {
+	var record = function(index,__record,colsMap) {
 	    this.__record = __record;
 	    this.index = index;
-	    this.config = config;
-	    this.colsMap = {};
-	    
-	    this.config.cols.forEach( function(column)  {
-	        this.colsMap[column.property] = column;
-	    }.bind(this));
+	    this.colsMap = colsMap;
+
 	};
 
 	/**
@@ -538,7 +505,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {*}
 	 */
 	record.prototype.getValue = function(property) {
-	   
 	    var path = this.colsMap[property].path;
 	    return utils.extractValue(property,path,this.__record);
 	};
@@ -547,6 +513,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	record.prototype.update = function(property,newValue) {
 	    
 	    var config = this.colsMap[property];
+
 	    var record = this.__record;
 	    var path = config.path ? config.path : property;
 	    
@@ -559,7 +526,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                record[config.setter](newValue, property, config);
 	            } else {
 	                //assume function
-
 	                thesetter.call(record,newValue, property, config);
 	            }
 
@@ -586,9 +552,21 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use require";
+	/*globals require,module */
+	/* jshint -W097, esnext: true */
+	"use strict";
 
 	module.exports = {
+	    
+	    colsToMap : function(config) {
+	        var colsMap = {};
+	        
+	        config.cols.forEach( function(column)  {
+	            colsMap[column.property] = column;
+	        });
+	        
+	        return colsMap;
+	    },
 	    
 	    extractValue : function(property,path,record) {
 
@@ -741,6 +719,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097 */
+	"use strict";
+	    
 	var React = __webpack_require__(1);
 
 	var RDTCell = __webpack_require__(13);
@@ -1451,7 +1433,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	         //FIXME ensure its a function
 	        if ( this.props.col.formatter ) {
-	            value = this.props.col.formatter(value,property,record,React);
+	            //pass the underlying record
+	            value = this.props.col.formatter(value,property,record.__record,React);
 	        }
 
 	        return (
