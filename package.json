@@ -1,6 +1,6 @@
 {
   "name": "react-datatable",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "Data Table written in React view framework",
   "dependencies": {},
   "author": "Warren Mira",
@@ -17,7 +17,8 @@
   "scripts": {
     "build": "webpack src/js/index.js dist/js/react-datatable.js",
     "build-min": "NODE_ENV=production COMPRESS=1 webpack src/js/index.js dist/js/react-datatable.min.js",
-    "watch": "webpack src/js/index.js dist/js/react-datatable.js --watch"
+    "watch": "webpack src/js/index.js dist/js/react-datatable.js --watch",
+    "test": "jest"
   },
   "keywords": [
     "react",
@@ -27,10 +28,18 @@
   ],
   "devDependencies": {
     "bluebird": "^2.6.2",
+    "jest-cli": "^0.2.1",
     "jsx-loader": "^0.12.2",
     "mocha": "^2.1.0",
     "react": "^0.12.2",
     "react-render-wrapper": "^1.0.2",
+    "react-tools": "^0.12.2",
     "webpack": "^1.4.15"
+  },
+  "jest": {
+    "scriptPreprocessor": "<rootDir>/__tests__/preprocessor.js",
+    "unmockedModulePathPatterns": [
+      "<rootDir>/node_modules/react"
+    ]
   }
 }

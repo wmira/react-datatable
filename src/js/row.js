@@ -1,4 +1,8 @@
 /** @jsx React.DOM */
+/*globals require,module */
+/* jshint -W097 */
+"use strict";
+    
 var React = require('react');
 
 var RDTCell = require('./cell.js');

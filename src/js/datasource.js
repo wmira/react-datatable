@@ -16,6 +16,8 @@ var EVENTS = {
 };
 
 var createMapper = function(__userMapper,config) {
+    
+    var colsMap = utils.colsToMap(config);
     return function(rawRec,index) {
         var recToMap = null;
         if ( typeof __userMapper === 'function' ) {
@@ -23,7 +25,7 @@ var createMapper = function(__userMapper,config) {
         } else {
             recToMap = rawRec;
         }
-        return new record(index,recToMap,config);
+        return new record(index,recToMap,colsMap);
     };  
 };
 

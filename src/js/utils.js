@@ -1,6 +1,18 @@
-"use require";
+/*globals require,module */
+/* jshint -W097, esnext: true */
+"use strict";
 
 module.exports = {
+    
+    colsToMap : function(config) {
+        var colsMap = {};
+        
+        config.cols.forEach( column => {
+            colsMap[column.property] = column;
+        });
+        
+        return colsMap;
+    },
     
     extractValue : function(property,path,record) {
 

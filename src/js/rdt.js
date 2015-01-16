@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 /*globals require,module */
-/* jshint -W097 */
+/* jshint -W097, esnext: true */
 "use strict";
 
 var React = require('react');

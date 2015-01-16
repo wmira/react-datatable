@@ -9,15 +9,11 @@ var utils = require("./utils");
  * Wraps a record within a datasource
  *  
  */
-var record = function(index,__record,config) {
+var record = function(index,__record,colsMap) {
     this.__record = __record;
     this.index = index;
-    this.config = config;
-    this.colsMap = {};
-    
-    this.config.cols.forEach( column => {
-        this.colsMap[column.property] = column;
-    });
+    this.colsMap = colsMap;
+
 };
 
 /**
@@ -27,7 +23,6 @@ var record = function(index,__record,config) {
  * @returns {*}
  */
 record.prototype.getValue = function(property) {
-   
     var path = this.colsMap[property].path;
     return utils.extractValue(property,path,this.__record);
 };
@@ -36,6 +31,7 @@ record.prototype.getValue = function(property) {
 record.prototype.update = function(property,newValue) {
     
     var config = this.colsMap[property];
+
     var record = this.__record;
     var path = config.path ? config.path : property;
     
@@ -48,7 +44,6 @@ record.prototype.update = function(property,newValue) {
                 record[config.setter](newValue, property, config);
             } else {
                 //assume function
-
                 thesetter.call(record,newValue, property, config);
             }
 

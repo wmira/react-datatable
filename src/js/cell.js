@@ -154,7 +154,8 @@ var RDTCell = React.createClass({
 
          //FIXME ensure its a function
         if ( this.props.col.formatter ) {
-            value = this.props.col.formatter(value,property,record,React);
+            //pass the underlying record
+            value = this.props.col.formatter(value,property,record.__record,React);
         }
 
         return (
