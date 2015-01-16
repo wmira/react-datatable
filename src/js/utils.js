@@ -4,6 +4,43 @@
 
 module.exports = {
     
+    updateRecord : function(property,newValue,colConfig,record) {
+
+        var config = colConfig;
+        var path = config.path ? config.path : property;
+
+        var setter = config.setter ?
+
+            //setter can be a string or an actual function -- derp
+            function(newValue,property,config) {
+                var thesetter = config.setter;
+                if ( typeof(config.setter) === 'string' ) {
+                    record[config.setter](newValue, property, config);
+                } else {
+                    //assume function
+                    thesetter.call(record,newValue, property, config);
+                }
+
+            }:
+            function() {
+                path.split(".").reduce(function(prev,current,index,arr) {
+                    if ( index === (arr.length - 1) ) {
+                        //we are at the end
+                        if ( typeof prev[current] === 'function' ) {
+                            prev[current](newValue);
+                        } else {
+                            prev[current] = newValue;
+                        }
+                    } else {
+                        return prev[current];
+                    }
+                },record);
+            } ;
+        setter.call(record,newValue,property,config);
+        
+    },
+    
+    
     colsToMap : function(config) {
         var colsMap = {};
         

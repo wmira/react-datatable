@@ -3,8 +3,6 @@
 /* jshint -W097, esnext: true */
 "use strict";
 
-var record = require("./record");
-
 var EventEmitter = require("events").EventEmitter;
 var utils = require("./utils");
 
@@ -15,19 +13,6 @@ var EVENTS = {
     RECORDS_SORTED : "RECORDS_SORTED"
 };
 
-var createMapper = function(__userMapper,config) {
-    
-    var colsMap = utils.colsToMap(config);
-    return function(rawRec,index) {
-        var recToMap = null;
-        if ( typeof __userMapper === 'function' ) {
-            recToMap = __userMapper(rawRec);
-        } else {
-            recToMap = rawRec;
-        }
-        return new record(index,recToMap,colsMap);
-    };  
-};
 
 /**
  * Create a new datasource using records array as a backing dataset
@@ -35,15 +20,11 @@ var createMapper = function(__userMapper,config) {
  * @param records
  * @constructor
  */
-var DataSource = function(records,userMapper,config) {
+var DataSource = function(records,config) {
     this.id = new Date();
-    var mapper = createMapper(userMapper,config);
+
     if ( records instanceof Array ) {
-        if (mapper) {
-            this.records = records.map(mapper);
-        } else {
-            this.records = records;
-        }
+        this.records = records;
     } else {
         var dataField = records.data;
         var data = records.datasource;
@@ -51,12 +32,11 @@ var DataSource = function(records,userMapper,config) {
     }
     this.config = config;
     if ( config ) {
-        this.properyConfigMap = {};
+        this.propertyConfigMap = {};
         this.config.cols.forEach( col => {
-            this.properyConfigMap[col.property] = col;
+            this.propertyConfigMap[col.property] = col;
         });
     }
-    this.sortedInfo = null;
 };
 
 
@@ -102,10 +82,10 @@ DataSource.prototype.sort = function(property,direction) {
         if ( direction === "-1" ) {
              reverseDir = -1;
         }
-        var col = this.properyConfigMap[property];
+        var col = this.propertyConfigMap[property];
         
-        var v1 = utils.extractValue(property,col.path,o1.__record);
-        var v2 = utils.extractValue(property,col.path,o2.__record);
+        var v1 = utils.extractValue(property,col.path,o1);
+        var v2 = utils.extractValue(property,col.path,o2);
         
          
         var type = utils.extractSortableType(v1,v2);
@@ -145,11 +125,10 @@ DataSource.prototype.map = function(pageState,mapper) {
  * @param recordIdx
  * @param newValue
  */
-DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config) {
+DataSource.prototype.updateRecord = function(recordIdx,property,newValue) {
 
     var record = this.records[recordIdx];
-    record.update(property,newValue);
-
+    utils.updateRecord(property,newValue,this.propertyConfigMap[property],record);
     //FIXME, we should get current value and pass as old value
     this.emit(EVENTS.RECORD_UPDATED,record,recordIdx,property,newValue);
 };

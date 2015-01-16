@@ -3,13 +3,11 @@
 "use strict";
 
 
-jest.dontMock('../src/js/record');
 jest.dontMock('../src/js/utils');
 
 
 describe('record test', function() {
 
-    var record = require('../src/js/record');
     var utils = require('../src/js/utils');
     var config = {
         cols : [
@@ -19,16 +17,14 @@ describe('record test', function() {
     };
     
     var colsMap = utils.colsToMap(config);
-    
+
     it('get correct value', function() {
        
         var obj = {  key2: 2 ,key3: 'key3' };
+
         
-        
-        var wrappedObj =  new record(1,obj,colsMap);
-        
-        expect(wrappedObj.getValue('key')).toBe('key3');
-        expect(wrappedObj.getValue('key2')).toBe(2);
+        expect(utils.extractValue('key',colsMap.key.path,obj)).toBe('key3');
+        expect(utils.extractValue('key2',colsMap.key2.path,obj)).toBe(2);
 
     });
 
@@ -36,11 +32,10 @@ describe('record test', function() {
 
         var obj = {  key2: 2 ,key3: 'key3' };
 
-        var wrappedObj =  new record(1,obj,colsMap);
-        
-        wrappedObj.update('key','123');
-        expect(wrappedObj.getValue('key')).toBe('123');
+        utils.updateRecord('key2','123',colsMap.key2,obj);
+        expect(obj.key2).toBe('123');
     });
+    
 
     it('updates record via setter',function() {
 
@@ -59,12 +54,10 @@ describe('record test', function() {
             this.key = v;
         }};
 
-        var wrappedObj =  new record(1,obj,colsMapUp);
+        utils.updateRecord('key2','123',colsMapUp.key2,obj);
+        expect(utils.extractValue('key2',colsMapUp.key2.path,obj)).toBe('123hey');
 
-        wrappedObj.update('key2','123');
-        expect(wrappedObj.getValue('key2')).toBe('123hey');
-
-        wrappedObj.update('key','y');
-        expect(wrappedObj.getValue('key')).toBe('y');
+        utils.updateRecord('key','y',colsMapUp.key,obj);
+        expect(utils.extractValue('key',colsMapUp.key.path,obj)).toBe('y');
     });
 });

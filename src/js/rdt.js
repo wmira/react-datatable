@@ -92,15 +92,9 @@ var RDT = React.createClass({
         var datasource = null;
         var pager =  null;
         if ( props.data  ) {
-            datasource = new DataSource(props.data,props.mapper,props.config);
+            datasource = new DataSource(props.data,props.config);
 
-        } else if ( props.datasource ) {
-            datasource = props.datasource;
-        } 
-        if ( !datasource ) {
-            datasource = new DataSource([],props.mapper,props.config);
         }
-
         
         if (props.config.pager  ) {
             if (props.config.pager) {

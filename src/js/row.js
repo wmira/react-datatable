@@ -12,7 +12,8 @@ var RDTCell = require('./cell.js');
  *
  */
 var RDTRow = React.createClass({
-
+    
+    /*
     componentWillReceiveProps: function(nextProps) {
         this.setState({record : nextProps.record});
     },
@@ -23,17 +24,14 @@ var RDTRow = React.createClass({
     
 
 
-    /**
-     * TODO: we need to reevaluate.
-     */
     onCellChange : function() {
        this.setState( { record : this.props.record });
-    },
+    },*/
 
     render: function() {
 
         var cols = this.props.config.cols;
-        var record = this.state.record;
+        var record = this.props.record;
 
         return (
             <tr  data-index={this.props.index}>

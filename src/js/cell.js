@@ -17,9 +17,7 @@ var utils = require("./utils");
  */
 var RDTCell = React.createClass({
     componentWillReceiveProps : function(newProps) {
-        //FIXME, do an equal test here?
-        //console.log('receiving new props: ' + newProps.ds.id);
-        this.setState({ record : newProps.record, editMode : false , ds : newProps.ds});
+        this.setState({ editMode : false });
     },
 
     /**
@@ -77,7 +75,7 @@ var RDTCell = React.createClass({
         var target = event.target;
 
         if ( !this.state.editMode && this.props.col.editable ) {
-            this.setState( { record : this.state.record, property : this.state.property, editMode : true  } );
+            this.setState( {  editMode : true  } );
         }
 
     },
@@ -93,13 +91,13 @@ var RDTCell = React.createClass({
              * FIXME: if we can't determine the type we should get it from the config as an option
              *
              */
-            var newValue = this.convertToType(this.state.record[this.state.property],this.refs.input.getDOMNode().value);
+            var newValue = this.convertToType(this.props.record[this.props.property],this.refs.input.getDOMNode().value);
             var datasource = this.props.datasource;
             var index = this.props.index;
 
             datasource.updateRecord(this.props.index,this.props.property,newValue,this.props.col);
 
-            this.setState( { record : this.state.record,  editMode : false } );
+            this.setState( {  editMode : false } );
             if ( this.props.onCellChange ) {
                 this.props.onCellChange();
             }
@@ -115,7 +113,7 @@ var RDTCell = React.createClass({
     },
 
     getInitialState: function() {
-        return { record : this.props.record, editMode : false, ds : this.props.ds };
+        return { editMode : false };
     },
 
 
@@ -141,21 +139,26 @@ var RDTCell = React.createClass({
         //
 
         return ( <input  onBlur={this.onBlur} className="rdt-editor"
-            style={this.getDisplayStyle()} onKeyUp={this.onKeyUp} onChange={this.onInputChange} ref="input"  defaultValue={this.state.record.getValue(this.props.property)} /> );
+            style={this.getDisplayStyle()} onKeyUp={this.onKeyUp} onChange={this.onInputChange} ref="input"  defaultValue={this.getValue()} /> );
+    },
+    
+    getValue : function() {
+        var property = this.props.property;
+        return utils.extractValue(property,this.props.datasource.propertyConfigMap[property].path,this.props.record);
     },
 
     render: function() {
 
 
-        var record = this.state.record;
+        var record = this.props.record;
         var property = this.props.property;
 
-        var value = record.getValue(property); //this.getValue();
+        var value = this.getValue();
 
          //FIXME ensure its a function
         if ( this.props.col.formatter ) {
             //pass the underlying record
-            value = this.props.col.formatter(value,property,record.__record,React);
+            value = this.props.col.formatter(value,property,record,React);
         }
 
         return (
