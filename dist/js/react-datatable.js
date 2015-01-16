@@ -78,10 +78,32 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/** @jsx React.DOM */
 	/*globals require,module */
+	/* jshint -W097, esnext: true */
 	"use strict";
 
-	var EventEmitter = __webpack_require__(11).EventEmitter;
-	var utils = __webpack_require__(5);
+	var record = __webpack_require__(5);
+
+	var EventEmitter = __webpack_require__(12).EventEmitter;
+	var utils = __webpack_require__(6);
+
+
+	var EVENTS = {
+	    RECORD_UPDATED : "RECORD_UPDATED",
+	    RECORD_ADDED : "RECORD_ADDED",
+	    RECORDS_SORTED : "RECORDS_SORTED"
+	};
+
+	var createMapper = function(__userMapper,config) {
+	    return function(rawRec,index) {
+	        var recToMap = null;
+	        if ( typeof __userMapper === 'function' ) {
+	            recToMap = __userMapper(rawRec);
+	        } else {
+	            recToMap = rawRec;
+	        }
+	        return new record(index,recToMap,config);
+	    };  
+	};
 
 	/**
 	 * Create a new datasource using records array as a backing dataset
@@ -89,8 +111,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param records
 	 * @constructor
 	 */
-	var DataSource = function(records,mapper,config) {
-	    
+	var DataSource = function(records,userMapper,config) {
+	    this.id = new Date();
+	    var mapper = createMapper(userMapper,config);
 	    if ( records instanceof Array ) {
 	        if (mapper) {
 	            this.records = records.map(mapper);
@@ -98,8 +121,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.records = records;
 	        }
 	    } else {
-	        var dataField = records["data"];
-	        var data = records["datasource"];
+	        var dataField = records.data;
+	        var data = records.datasource;
 	        this.records =  data[dataField];
 	    }
 	    this.config = config;
@@ -126,18 +149,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return this.records[index];
 	};
 
-	DataSource.prototype.empty = function() {
-	   this.records = [];
-	    this.emit("recordsUpdated");
-	};
+
 	/**
 	 * Append a record
 	 *  
 	 * @param record
 	 */
 	DataSource.prototype.append = function(record) {
-	    this.records.push(record)
-	    this.emit("recordAdded",record);
+	    this.records.push(record);
+	    this.emit(EVENTS.RECORD_ADDED,record);
 	};
 
 
@@ -160,8 +180,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        var col = this.properyConfigMap[property];
 	        
-	        var v1 = utils.extractValue(property,col.path,o1);
-	        var v2 = utils.extractValue(property,col.path,o2);
+	        var v1 = utils.extractValue(property,col.path,o1.__record);
+	        var v2 = utils.extractValue(property,col.path,o2.__record);
 	        
 	         
 	        var type = utils.extractSortableType(v1,v2);
@@ -169,7 +189,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        
 	    }.bind(this));
 	    
-	    this.sortedInfo = { property: property, direction: direction};
+	    this.emit(EVENTS.RECORDS_SORTED, { property: property, direction : direction});
+	    //this.sortedInfo = { property: property, direction: direction};
 
 	};
 
@@ -203,6 +224,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config) {
 
 	    var record = this.records[recordIdx];
+	    record.update(property,newValue);
+	    /*
 	    var path = config.path ? config.path : property;
 	    var setter = config.setter ?
 
@@ -233,8 +256,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            },record);
 	        } ;
 	    setter.call(record,newValue,property,config);
+	    */
 	    //FIXME, we should get current value and pass as old value
-	    this.emit("recordUpdated",record,recordIdx,property,newValue);
+	    this.emit(EVENTS.RECORD_UPDATED,record,recordIdx,property,newValue);
 	};
 
 
@@ -245,15 +269,19 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097 */
+	"use strict";
+
 	var React = __webpack_require__(1);
 
 	var DataSource = __webpack_require__(2);
-	var Pager = __webpack_require__(6);
+	var Pager = __webpack_require__(7);
 
-	var RDTRow = __webpack_require__(7);
-	var RDTColumn = __webpack_require__(8);
-	var RDTBody = __webpack_require__(9);
-	var Paginator = __webpack_require__(10);
+	var RDTRow = __webpack_require__(8);
+	var RDTColumn = __webpack_require__(9);
+	var RDTBody = __webpack_require__(10);
+	var Paginator = __webpack_require__(11);
 
 
 
@@ -270,7 +298,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    foundation: {
 	        table: ''
 	    }
-	}
+	};
 
 	/**
 	 * Simple Data Table using react.
@@ -302,14 +330,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.forceUpdate();
 	        }
 	    },
-	    /**
-	     * Sort using the property
-	     * @param property
-	     */
-	    sort : function(property) {
-
+	    
+	    componentWillReceiveProps : function(nextProps) {
+	        this.setState(this._createStateFromProps(nextProps));
 	    },
-
 	    nextPage : function() {
 	        if ( this.pager ) {
 	            this.pager = this.pager.next();
@@ -321,7 +345,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.ds.add(record);
 	        var pagerState = null;
 	        if ( this.pager ) {
-	            pagerState = this.pager.state()
+	            pagerState = this.pager.state();
 	        }
 
 	        this.setState({ pager : pagerState });
@@ -332,25 +356,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.props.onChange();
 	        }
 	    },
+	    
+	    _createStateFromProps : function(props) {
 
+	        var datasource = null;
+	        var pager =  null;
+	        if ( props.data  ) {
+	            datasource = new DataSource(props.data,props.mapper,props.config);
 
-	    getInitialState: function () {
-
-	        var propsToUse = this.props;
-	        var datasource =null;
-	        if ( propsToUse.data  ) {
-	            datasource = new DataSource(propsToUse.data,this.props.mapper,this.props.config);
-	        } else if ( propsToUse.datasource ) {
-	            datasource = propsToUse.datasource;
+	        } else if ( props.datasource ) {
+	            datasource = props.datasource;
+	        } 
+	        if ( !datasource ) {
+	            datasource = new DataSource([],props.mapper,props.config);
 	        }
+
 	        
-	        var pager =  null; 
-	        if (this.props.config.pager  )
-	        if ( this.props.config.pager ) {
-	            pager = new Pager(1, this.props.config.pager.rowsPerPage, this.ds);
+	        if (props.config.pager  ) {
+	            if (props.config.pager) {
+	                pager = new Pager(1, props.config.pager.rowsPerPage, datasource);
+	            }
 	        }
 	        return { datasource: datasource,pager :pager };
-	        
+	    },
+
+	    /**
+	     * 
+	     *
+	     * @returns {*}
+	     */
+	    getInitialState: function () {
+	        return this._createStateFromProps(this.props);
 	    },
 
 	    pagerUpdated : function(page) {
@@ -367,8 +403,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var datasource = this.state.datasource;
 
 	        var paginator = null;
-	        
+	        /*jshint ignore:start */
 	        if ( this.state.pager ) {
+
 	            paginator =  React.createElement(Paginator, {datasource: datasource, config: this.props.config, pageChangedListener: this.pagerUpdated}) ;
 
 	        }
@@ -377,38 +414,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	            React.createElement("div", {onClick: this.onClick}, 
 	                React.createElement("div", {className: "rdt-container", ref: "container"}, 
 	                    React.createElement("table", {className: tableStyle['table']}, 
-	                        React.createElement(RDTColumn, {datasource: datasource, config: config}), 
+	                        React.createElement(RDTColumn, React.__spread({},  this.props, {datasource: datasource})), 
 	                        React.createElement(RDTBody, {config: config, datasource: datasource, pager: this.state.pager})
 	                    )
 	                ), 
 	                paginator
 	            )
 	        )
-
+	        /*jshint ignore:end */
 	    }
 
 
-
-	    /**
-	     * Return the underlying datasource if argument is null or use the new datasource provided
-	     *
-	     *
-	     * @returns {*|Function|datasource|RDT.getInitialState.datasource|paginator.datasource|RDT.render.datasource}
-	     */
-	    
-	/*
-	    setDataSource : function(datasource) {
-
-	        if ( typeof datasource.then === "function" ) {
-	            datasource.then(function(data) {
-	                this.setState({datasource: new DataSource(data,this.props.mapper,this.props.config)});
-	            }.bind(this));
-	        } else {
-	            this.setState({datasource: datasource});
-
-	        }
-	    }*/
-	    
 	});
 
 
@@ -493,6 +509,83 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097, esnext: true */
+	"use strict";
+
+	var utils = __webpack_require__(6);
+
+	/**
+	 * Wraps a record within a datasource
+	 *  
+	 */
+	var record = function(index,__record,config) {
+	    this.__record = __record;
+	    this.index = index;
+	    this.config = config;
+	    this.colsMap = {};
+	    
+	    this.config.cols.forEach( function(column)  {
+	        this.colsMap[column.property] = column;
+	    }.bind(this));
+	};
+
+	/**
+	 * Retrieve the value
+	 *
+	 * @param property
+	 * @returns {*}
+	 */
+	record.prototype.getValue = function(property) {
+	   
+	    var path = this.colsMap[property].path;
+	    return utils.extractValue(property,path,this.__record);
+	};
+
+
+	record.prototype.update = function(property,newValue) {
+	    
+	    var config = this.colsMap[property];
+	    var record = this.__record;
+	    var path = config.path ? config.path : property;
+	    
+	    var setter = config.setter ?
+
+	        //setter can be a string or an actual function -- derp
+	        function(newValue,property,config) {
+	            var thesetter = config.setter;
+	            if ( typeof(config.setter) === 'string' ) {
+	                record[config.setter](newValue, property, config);
+	            } else {
+	                //assume function
+
+	                thesetter.call(record,newValue, property, config);
+	            }
+
+	        }:
+	        function() {
+	            path.split(".").reduce(function(prev,current,index,arr) {
+	                if ( index === (arr.length - 1) ) {
+	                    //we are at the end
+	                    if ( typeof prev[current] === 'function' ) {
+	                        prev[current](newValue);
+	                    } else {
+	                        prev[current] = newValue;
+	                    }
+	                } else {
+	                    return prev[current];
+	                }
+	            },record);
+	        } ;
+	    setter.call(record,newValue,property,config);
+	};
+	module.exports = record;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
 	"use require";
 
 	module.exports = {
@@ -570,7 +663,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -644,13 +737,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Pager;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
 	var React = __webpack_require__(1);
 
-	var RDTCell = __webpack_require__(12);
+	var RDTCell = __webpack_require__(13);
 
 	/**
 	 * React Component as a row
@@ -659,15 +752,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	var RDTRow = React.createClass({displayName: "RDTRow",
 
 	    componentWillReceiveProps: function(nextProps) {
-	        //FIXME: do an === test here?
 	        this.setState({record : nextProps.record});
 	    },
 
 	    getInitialState: function() {
-	        return { record : this.props.record };
+	        return { record : this.props.record  };
 	    },
 	    
-	    
+
 
 	    /**
 	     * TODO: we need to reevaluate.
@@ -680,13 +772,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var cols = this.props.config.cols;
 	        var record = this.state.record;
-	        var ds = this.props.ds;
 
 	        return (
 	            React.createElement("tr", {"data-index": this.props.index}, 
 	            
 	                cols.map(function (col,idx) {
-	                    return React.createElement(RDTCell, {onCellChange: this.onCellChange, index: this.props.index, key: idx, ds: ds, col: col, property: col.property, record: record, path: col.path})
+	                    return React.createElement(RDTCell, {config: this.props.config, onCellChange: this.onCellChange, index: this.props.index, key: idx, datasource: this.props.datasource, col: col, property: col.property, record: record, path: col.path})
 	                }.bind(this))
 	            
 	            )
@@ -699,10 +790,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTRow;
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097 */
+	"use strict";
+
 	var React = __webpack_require__(1);
 
 	var DIRECTION_UP = "1";
@@ -712,25 +807,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	   
 
 	    
-	    getInitialState : function() {
-	        return { direction: this.props.direction, isSortedColumn : this.props.isSortedColumn };
-	    },
-	    
-	    componentWillReceiveProps : function(next) {
-	        if ( this.props.isSortedColumn !== next.isSortedColumn ) {
-	            this.setState({direction: next.direction, isSortedColumn : next.isSortedColumn });
-	        }
-	    },
-	    
 	    render : function() {
-	       
-	        var arrowUp = this.state.isSortedColumn && ( this.state.direction === DIRECTION_UP )
-	                ? "rdt-arrow-up-active" : "rdt-arrow-up-inactive";
-	        var arrowDown = this.state.isSortedColumn && ( this.state.direction === DIRECTION_DOWN )
-	            ? "rdt-arrow-down-active" : "rdt-arrow-down-inactive";
-	        
 
-	        
+	        var arrowUp = (  this.props.isSortedColumn && this.props.direction == DIRECTION_UP ) ?
+	            "rdt-arrow-up-active" : "rdt-arrow-up-inactive";
+	        var arrowDown = ( this.props.isSortedColumn &&  this.props.direction == DIRECTION_DOWN ) ?
+	            "rdt-arrow-down-active" : "rdt-arrow-down-inactive";
+
 	        return (React.createElement("div", {style:  { float: "right"} }, React.createElement("div", {
 	            "data-rdt-action": "sort", "data-col-property": this.props.col.property, "data-sort-direction": DIRECTION_UP, className: "rdt-arrow-up " + arrowUp}), React.createElement("div", {style: {"marginBottom": "5px"}}), 
 	                React.createElement("div", {"data-rdt-action": "sort", "data-col-property": this.props.col.property, "data-sort-direction": DIRECTION_DOWN, className: "rdt-arrow-down " + arrowDown})))
@@ -745,8 +828,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	var RDTColumn = React.createClass({displayName: "RDTColumn",
 	    
 	    
+	    recordsSorted : function(sortedInfo) {
+	        this.setState({sortInfo: sortedInfo})
+	    },
 	    getInitialState : function() {
-	      return { datasource : this.props.datasource };
+	        var datasource =this.props.datasource;
+	        datasource.on("RECORDS_SORTED",this.recordsSorted);
+	        return { datasource : this.props.datasource };
+	    },
+	    componentWillReceiveProps: function(nextProps) {
+	        if ( nextProps.datasource ) {
+	            nextProps.datasource.on("RECORDS_SORTED", this.recordsSorted);
+	        }
 	    },
 
 	    render: function() {
@@ -754,7 +847,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var cols = this.props.config.cols;
 	        var datasource = this.state.datasource;
 	        
-	        var sortedInfo = datasource.sortedInfo;
+	        var sortedInfo = this.state.sortInfo; //datasource.sortedInfo;
 	        return(
 	            React.createElement("thead", {onClick: this.onClick}, 
 	                React.createElement("tr", null, 
@@ -785,12 +878,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
 	var React = __webpack_require__(1);
-	var RDTRow = __webpack_require__(7);
+	var RDTRow = __webpack_require__(8);
 
 	/**
 	 * React Component for Body
@@ -798,23 +891,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	var RDTBody = React.createClass({displayName: "RDTBody",
 
-	    componentWillReceiveProps : function(newprops) {
-	        this.setState({ pager: newprops.pager, ds : newprops.datasource});
-	    },
-
-
-	    getInitialState: function() {
-	        return { pager: this.props.pager, ds : this.props.datasource};
-	    },
-
 
 	    render: function() {
-
 
 	        return(
 	            React.createElement("tbody", null, 
 	                
-	                    this.state.ds.map(this.state.pager, function (data, idx, realIdx) {
+	                    this.props.datasource.map(this.props.pager, function (data, idx, realIdx) {
 
 	                        //if this is a normal array map function, then realIdx here is the underlying array
 	                        //if the map came from us, then realIdx is the real index. if we are on a page, then idx will point to
@@ -823,9 +906,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        if (realIdx && !Array.isArray(realIdx)) {
 	                            id = realIdx;
 	                        }
-	                        return React.createElement(RDTRow, {index: id, ds: this.state.ds, key: id, record: data, config: this.props.config})
+	                        return React.createElement(RDTRow, {datasource: this.props.datasource, index: id, key: id, record: data, config: this.props.config})
 	                    }.bind(this))
-	                    
+	                
 	            )
 	        )
 
@@ -836,7 +919,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTBody;
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -902,7 +985,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Paginator;
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -1209,13 +1292,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097, esnext: true */
+	"use strict";
+	    
 	var React = __webpack_require__(1);
 
-	var utils = __webpack_require__(5);
+	var utils = __webpack_require__(6);
 
 	/**
 	 * React Component for Cell.
@@ -1228,7 +1315,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var RDTCell = React.createClass({displayName: "RDTCell",
 	    componentWillReceiveProps : function(newProps) {
 	        //FIXME, do an equal test here?
-	        this.setState({ record : newProps.record, editMode : false });
+	        //console.log('receiving new props: ' + newProps.ds.id);
+	        this.setState({ record : newProps.record, editMode : false , ds : newProps.ds});
 	    },
 
 	    /**
@@ -1303,10 +1391,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	             *
 	             */
 	            var newValue = this.convertToType(this.state.record[this.state.property],this.refs.input.getDOMNode().value);
-	            var datasource = this.props.ds;
+	            var datasource = this.props.datasource;
 	            var index = this.props.index;
 
 	            datasource.updateRecord(this.props.index,this.props.property,newValue,this.props.col);
+
 	            this.setState( { record : this.state.record,  editMode : false } );
 	            if ( this.props.onCellChange ) {
 	                this.props.onCellChange();
@@ -1317,16 +1406,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    },
 
-	    onInputChange : function(event) {
-	        //what the hell is this one doing here..
-	    },
 
 	    onBlur : function() {
 	        this.setState({ editMode : false });
 	    },
 
 	    getInitialState: function() {
-	        return { record : this.props.record, editMode : false };
+	        return { record : this.props.record, editMode : false, ds : this.props.ds };
 	    },
 
 
@@ -1351,18 +1437,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //editor can be a react component
 	        //
 
-	        return ( React.createElement("input", {onKeyUp: this.onKeyUp, ref: "input", onBlur: this.onBlur, className: "rdt-editor", 
-	            style: this.getDisplayStyle(), onKeyUp: this.onKeyUp, onChange: this.onInputChange, ref: "input", defaultValue: this.getValue()}) );
-	    },
-
-	    getValue : function() {
-
-	        var path = this.props.path;
-	        var record = this.state.record;
-	        var property = this.props.property;
-	        
-	        return utils.extractValue(property,path,record);
-
+	        return ( React.createElement("input", {onBlur: this.onBlur, className: "rdt-editor", 
+	            style: this.getDisplayStyle(), onKeyUp: this.onKeyUp, onChange: this.onInputChange, ref: "input", defaultValue: this.state.record.getValue(this.props.property)}) );
 	    },
 
 	    render: function() {
@@ -1371,7 +1447,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var record = this.state.record;
 	        var property = this.props.property;
 
-	        var value = this.getValue();
+	        var value = record.getValue(property); //this.getValue();
 
 	         //FIXME ensure its a function
 	        if ( this.props.col.formatter ) {

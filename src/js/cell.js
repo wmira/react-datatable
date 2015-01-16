@@ -1,4 +1,8 @@
 /** @jsx React.DOM */
+/*globals require,module */
+/* jshint -W097, esnext: true */
+"use strict";
+    
 var React = require('react');
 
 var utils = require("./utils");
@@ -14,7 +18,8 @@ var utils = require("./utils");
 var RDTCell = React.createClass({
     componentWillReceiveProps : function(newProps) {
         //FIXME, do an equal test here?
-        this.setState({ record : newProps.record, editMode : false });
+        //console.log('receiving new props: ' + newProps.ds.id);
+        this.setState({ record : newProps.record, editMode : false , ds : newProps.ds});
     },
 
     /**
@@ -89,10 +94,11 @@ var RDTCell = React.createClass({
              *
              */
             var newValue = this.convertToType(this.state.record[this.state.property],this.refs.input.getDOMNode().value);
-            var datasource = this.props.ds;
+            var datasource = this.props.datasource;
             var index = this.props.index;
 
             datasource.updateRecord(this.props.index,this.props.property,newValue,this.props.col);
+
             this.setState( { record : this.state.record,  editMode : false } );
             if ( this.props.onCellChange ) {
                 this.props.onCellChange();
@@ -103,16 +109,13 @@ var RDTCell = React.createClass({
 
     },
 
-    onInputChange : function(event) {
-        //what the hell is this one doing here..
-    },
 
     onBlur : function() {
         this.setState({ editMode : false });
     },
 
     getInitialState: function() {
-        return { record : this.props.record, editMode : false };
+        return { record : this.props.record, editMode : false, ds : this.props.ds };
     },
 
 
@@ -137,18 +140,8 @@ var RDTCell = React.createClass({
         //editor can be a react component
         //
 
-        return ( <input onKeyUp={this.onKeyUp} ref="input" onBlur={this.onBlur} className="rdt-editor"
-            style={this.getDisplayStyle()} onKeyUp={this.onKeyUp} onChange={this.onInputChange} ref="input"  defaultValue={this.getValue()} /> );
-    },
-
-    getValue : function() {
-
-        var path = this.props.path;
-        var record = this.state.record;
-        var property = this.props.property;
-        
-        return utils.extractValue(property,path,record);
-
+        return ( <input  onBlur={this.onBlur} className="rdt-editor"
+            style={this.getDisplayStyle()} onKeyUp={this.onKeyUp} onChange={this.onInputChange} ref="input"  defaultValue={this.state.record.getValue(this.props.property)} /> );
     },
 
     render: function() {
@@ -157,7 +150,7 @@ var RDTCell = React.createClass({
         var record = this.state.record;
         var property = this.props.property;
 
-        var value = this.getValue();
+        var value = record.getValue(property); //this.getValue();
 
          //FIXME ensure its a function
         if ( this.props.col.formatter ) {

@@ -1,4 +1,8 @@
 /** @jsx React.DOM */
+/*globals require,module */
+/* jshint -W097 */
+"use strict";
+
 var React = require('react');
 
 var DIRECTION_UP = "1";
@@ -8,25 +12,13 @@ var SortControl = React.createClass({
    
 
     
-    getInitialState : function() {
-        return { direction: this.props.direction, isSortedColumn : this.props.isSortedColumn };
-    },
-    
-    componentWillReceiveProps : function(next) {
-        if ( this.props.isSortedColumn !== next.isSortedColumn ) {
-            this.setState({direction: next.direction, isSortedColumn : next.isSortedColumn });
-        }
-    },
-    
     render : function() {
-       
-        var arrowUp = this.state.isSortedColumn && ( this.state.direction === DIRECTION_UP )
-                ? "rdt-arrow-up-active" : "rdt-arrow-up-inactive";
-        var arrowDown = this.state.isSortedColumn && ( this.state.direction === DIRECTION_DOWN )
-            ? "rdt-arrow-down-active" : "rdt-arrow-down-inactive";
-        
 
-        
+        var arrowUp = (  this.props.isSortedColumn && this.props.direction == DIRECTION_UP ) ?
+            "rdt-arrow-up-active" : "rdt-arrow-up-inactive";
+        var arrowDown = ( this.props.isSortedColumn &&  this.props.direction == DIRECTION_DOWN ) ?
+            "rdt-arrow-down-active" : "rdt-arrow-down-inactive";
+
         return (<div style={ { float: "right"} }><div
             data-rdt-action="sort" data-col-property={this.props.col.property}   data-sort-direction={DIRECTION_UP} className={"rdt-arrow-up " + arrowUp}></div><div style={{"marginBottom": "5px"}}></div>
                 <div data-rdt-action="sort" data-col-property={this.props.col.property}   data-sort-direction={DIRECTION_DOWN} className={"rdt-arrow-down " + arrowDown}></div></div>)
@@ -41,8 +33,18 @@ var SortControl = React.createClass({
 var RDTColumn = React.createClass({
     
     
+    recordsSorted : function(sortedInfo) {
+        this.setState({sortInfo: sortedInfo})
+    },
     getInitialState : function() {
-      return { datasource : this.props.datasource };
+        var datasource =this.props.datasource;
+        datasource.on("RECORDS_SORTED",this.recordsSorted);
+        return { datasource : this.props.datasource };
+    },
+    componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.datasource ) {
+            nextProps.datasource.on("RECORDS_SORTED", this.recordsSorted);
+        }
     },
 
     render: function() {
@@ -50,7 +52,7 @@ var RDTColumn = React.createClass({
         var cols = this.props.config.cols;
         var datasource = this.state.datasource;
         
-        var sortedInfo = datasource.sortedInfo;
+        var sortedInfo = this.state.sortInfo; //datasource.sortedInfo;
         return(
             <thead onClick={this.onClick}>
                 <tr>{

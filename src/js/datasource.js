@@ -1,9 +1,31 @@
 /** @jsx React.DOM */
 /*globals require,module */
+/* jshint -W097, esnext: true */
 "use strict";
+
+var record = require("./record");
 
 var EventEmitter = require("events").EventEmitter;
 var utils = require("./utils");
+
+
+var EVENTS = {
+    RECORD_UPDATED : "RECORD_UPDATED",
+    RECORD_ADDED : "RECORD_ADDED",
+    RECORDS_SORTED : "RECORDS_SORTED"
+};
+
+var createMapper = function(__userMapper,config) {
+    return function(rawRec,index) {
+        var recToMap = null;
+        if ( typeof __userMapper === 'function' ) {
+            recToMap = __userMapper(rawRec);
+        } else {
+            recToMap = rawRec;
+        }
+        return new record(index,recToMap,config);
+    };  
+};
 
 /**
  * Create a new datasource using records array as a backing dataset
@@ -11,8 +33,9 @@ var utils = require("./utils");
  * @param records
  * @constructor
  */
-var DataSource = function(records,mapper,config) {
-    
+var DataSource = function(records,userMapper,config) {
+    this.id = new Date();
+    var mapper = createMapper(userMapper,config);
     if ( records instanceof Array ) {
         if (mapper) {
             this.records = records.map(mapper);
@@ -20,8 +43,8 @@ var DataSource = function(records,mapper,config) {
             this.records = records;
         }
     } else {
-        var dataField = records["data"];
-        var data = records["datasource"];
+        var dataField = records.data;
+        var data = records.datasource;
         this.records =  data[dataField];
     }
     this.config = config;
@@ -48,18 +71,15 @@ DataSource.prototype.record = function(index) {
     return this.records[index];
 };
 
-DataSource.prototype.empty = function() {
-   this.records = [];
-    this.emit("recordsUpdated");
-};
+
 /**
  * Append a record
  *  
  * @param record
  */
 DataSource.prototype.append = function(record) {
-    this.records.push(record)
-    this.emit("recordAdded",record);
+    this.records.push(record);
+    this.emit(EVENTS.RECORD_ADDED,record);
 };
 
 
@@ -82,8 +102,8 @@ DataSource.prototype.sort = function(property,direction) {
         }
         var col = this.properyConfigMap[property];
         
-        var v1 = utils.extractValue(property,col.path,o1);
-        var v2 = utils.extractValue(property,col.path,o2);
+        var v1 = utils.extractValue(property,col.path,o1.__record);
+        var v2 = utils.extractValue(property,col.path,o2.__record);
         
          
         var type = utils.extractSortableType(v1,v2);
@@ -91,7 +111,8 @@ DataSource.prototype.sort = function(property,direction) {
         
     });
     
-    this.sortedInfo = { property: property, direction: direction};
+    this.emit(EVENTS.RECORDS_SORTED, { property: property, direction : direction});
+
 
 };
 
@@ -125,38 +146,10 @@ DataSource.prototype.map = function(pageState,mapper) {
 DataSource.prototype.updateRecord = function(recordIdx,property,newValue,config) {
 
     var record = this.records[recordIdx];
-    var path = config.path ? config.path : property;
-    var setter = config.setter ?
+    record.update(property,newValue);
 
-        //setter can be a string or an actual function -- derp
-        function(newValue,property,config) {
-            var thesetter = config.setter;
-            if ( typeof(config.setter) === 'string' ) {
-                record[config.setter](newValue, property, config);
-            } else {
-                //assume function
-
-                thesetter.call(record,newValue, property, config);
-            }
-
-        }:
-        function() {
-            path.split(".").reduce(function(prev,current,index,arr) {
-                if ( index === (arr.length - 1) ) {
-                    //we are at the end
-                    if ( typeof prev[current] === 'function' ) {
-                        prev[current](newValue);
-                    } else {
-                        prev[current] = newValue;
-                    }
-                } else {
-                    return prev[current];
-                }
-            },record);
-        } ;
-    setter.call(record,newValue,property,config);
     //FIXME, we should get current value and pass as old value
-    this.emit("recordUpdated",record,recordIdx,property,newValue);
+    this.emit(EVENTS.RECORD_UPDATED,record,recordIdx,property,newValue);
 };
 
 

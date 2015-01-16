@@ -17,6 +17,7 @@
     </head>
 <body>
     <br/>
+    <button id="btn">Switch</button>
     <div class="container">
         <div class="row">
             <div class="col-lg-10">
@@ -38,6 +39,14 @@
         { name: 'Caesar Vance', position: 'Pre-Sales Support', office: 'New York', age: 33, salary: 162700 },
         { name: 'Cara Stevens', position: 'Sales Assistant', office: 'New York', age: 46, salary: 145600}
     ];
+    var data3 =  [
+        { name: 'Airi ', position: 'Accountant', office: 'Tokyo', age: 33, salary: 162700},
+        { name: 'Bradley ', position: 'Software Engineer', office: 'London', age: 41, salary: 132000},
+        { name: 'Brielle ', position: 'Integration Specialist', office: 'New York', age: 61, salary: 372000},
+        { name: 'Caesar ', position: 'Pre-Sales Support', office: 'New York', age: 33, salary: 162700 },
+        { name: 'Cara ', position: 'Sales Assistant', office: 'New York', age: 46, salary: 145600}
+    ];
+    
 
     var data2 = [
         { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 33, salary: 162700},
@@ -98,6 +107,9 @@
 
     RDT.render({data: data2, config: config},"content");
 
+    document.getElementById("btn").addEventListener("click",function() {
+        RDT.render({data: data1, config: config},"content");
+    });
 
 
 </script>

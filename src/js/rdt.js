@@ -1,4 +1,8 @@
 /** @jsx React.DOM */
+/*globals require,module */
+/* jshint -W097 */
+"use strict";
+
 var React = require('react');
 
 var DataSource = require("./datasource");
@@ -24,7 +28,7 @@ var TABLE_CSS = {
     foundation: {
         table: ''
     }
-}
+};
 
 /**
  * Simple Data Table using react.
@@ -56,14 +60,10 @@ var RDT = React.createClass({
             this.forceUpdate();
         }
     },
-    /**
-     * Sort using the property
-     * @param property
-     */
-    sort : function(property) {
-
+    
+    componentWillReceiveProps : function(nextProps) {
+        this.setState(this._createStateFromProps(nextProps));
     },
-
     nextPage : function() {
         if ( this.pager ) {
             this.pager = this.pager.next();
@@ -75,7 +75,7 @@ var RDT = React.createClass({
         this.ds.add(record);
         var pagerState = null;
         if ( this.pager ) {
-            pagerState = this.pager.state()
+            pagerState = this.pager.state();
         }
 
         this.setState({ pager : pagerState });
@@ -86,25 +86,37 @@ var RDT = React.createClass({
             this.props.onChange();
         }
     },
+    
+    _createStateFromProps : function(props) {
 
+        var datasource = null;
+        var pager =  null;
+        if ( props.data  ) {
+            datasource = new DataSource(props.data,props.mapper,props.config);
 
-    getInitialState: function () {
-
-        var propsToUse = this.props;
-        var datasource =null;
-        if ( propsToUse.data  ) {
-            datasource = new DataSource(propsToUse.data,this.props.mapper,this.props.config);
-        } else if ( propsToUse.datasource ) {
-            datasource = propsToUse.datasource;
+        } else if ( props.datasource ) {
+            datasource = props.datasource;
+        } 
+        if ( !datasource ) {
+            datasource = new DataSource([],props.mapper,props.config);
         }
+
         
-        var pager =  null; 
-        if (this.props.config.pager  )
-        if ( this.props.config.pager ) {
-            pager = new Pager(1, this.props.config.pager.rowsPerPage, this.ds);
+        if (props.config.pager  ) {
+            if (props.config.pager) {
+                pager = new Pager(1, props.config.pager.rowsPerPage, datasource);
+            }
         }
         return { datasource: datasource,pager :pager };
-        
+    },
+
+    /**
+     * 
+     *
+     * @returns {*}
+     */
+    getInitialState: function () {
+        return this._createStateFromProps(this.props);
     },
 
     pagerUpdated : function(page) {
@@ -121,8 +133,9 @@ var RDT = React.createClass({
         var datasource = this.state.datasource;
 
         var paginator = null;
-        
+        /*jshint ignore:start */
         if ( this.state.pager ) {
+
             paginator =  <Paginator datasource={datasource} config={this.props.config} pageChangedListener={this.pagerUpdated}/> ;
 
         }
@@ -131,38 +144,17 @@ var RDT = React.createClass({
             <div onClick={this.onClick}>
                 <div className="rdt-container" ref="container">
                     <table className={tableStyle['table']}>
-                        <RDTColumn datasource={datasource} config={config} />
+                        <RDTColumn {...this.props} datasource={datasource} />
                         <RDTBody config={config} datasource={datasource} pager={this.state.pager}/>
                     </table>
                 </div>
                 {paginator}
             </div>
         )
-
+        /*jshint ignore:end */
     }
 
 
-
-    /**
-     * Return the underlying datasource if argument is null or use the new datasource provided
-     *
-     *
-     * @returns {*|Function|datasource|RDT.getInitialState.datasource|paginator.datasource|RDT.render.datasource}
-     */
-    
-/*
-    setDataSource : function(datasource) {
-
-        if ( typeof datasource.then === "function" ) {
-            datasource.then(function(data) {
-                this.setState({datasource: new DataSource(data,this.props.mapper,this.props.config)});
-            }.bind(this));
-        } else {
-            this.setState({datasource: datasource});
-
-        }
-    }*/
-    
 });
 
 

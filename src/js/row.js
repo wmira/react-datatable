@@ -10,15 +10,14 @@ var RDTCell = require('./cell.js');
 var RDTRow = React.createClass({
 
     componentWillReceiveProps: function(nextProps) {
-        //FIXME: do an === test here?
         this.setState({record : nextProps.record});
     },
 
     getInitialState: function() {
-        return { record : this.props.record };
+        return { record : this.props.record  };
     },
     
-    
+
 
     /**
      * TODO: we need to reevaluate.
@@ -31,13 +30,12 @@ var RDTRow = React.createClass({
 
         var cols = this.props.config.cols;
         var record = this.state.record;
-        var ds = this.props.ds;
 
         return (
             <tr  data-index={this.props.index}>
             {
                 cols.map(function (col,idx) {
-                    return <RDTCell onCellChange={this.onCellChange} index={this.props.index} key={idx} ds={ds} col={col} property={col.property} record={record} path={col.path}/>
+                    return <RDTCell config={this.props.config} onCellChange={this.onCellChange} index={this.props.index} key={idx} datasource={this.props.datasource} col={col} property={col.property} record={record} path={col.path}/>
                 }.bind(this))
             }
             </tr>
