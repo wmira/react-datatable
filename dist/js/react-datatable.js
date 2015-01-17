@@ -82,7 +82,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	"use strict";
 
 	var EventEmitter = __webpack_require__(11).EventEmitter;
-	var utils = __webpack_require__(10);
+	var utils = __webpack_require__(5);
 
 
 	var EVENTS = {
@@ -226,12 +226,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var React = __webpack_require__(1);
 
 	var DataSource = __webpack_require__(2);
-	var Pager = __webpack_require__(5);
+	var Pager = __webpack_require__(6);
 
-	var RDTRow = __webpack_require__(6);
-	var RDTColumn = __webpack_require__(7);
-	var RDTBody = __webpack_require__(8);
-	var Paginator = __webpack_require__(9);
+	var RDTRow = __webpack_require__(7);
+	var RDTColumn = __webpack_require__(8);
+	var RDTBody = __webpack_require__(9);
+	var Paginator = __webpack_require__(10);
 
 
 
@@ -453,6 +453,135 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/*globals require,module */
+	/* jshint -W097, esnext: true */
+	"use strict";
+
+	module.exports = {
+	    
+	    updateRecord : function(property,newValue,colConfig,record) {
+
+	        var config = colConfig;
+	        var path = config.path ? config.path : property;
+
+	        var setter = config.setter ?
+
+	            //setter can be a string or an actual function -- derp
+	            function(newValue,property,config) {
+	                var thesetter = config.setter;
+	                if ( typeof(config.setter) === 'string' ) {
+	                    record[config.setter](newValue, property, config,record);
+	                } else {
+	                    //assume function
+	                    thesetter.call(record,newValue, property, config,record);
+	                }
+
+	            }:
+	            function() {
+	                path.split(".").reduce(function(prev,current,index,arr) {
+	                    if ( index === (arr.length - 1) ) {
+	                        //we are at the end
+	                        if ( typeof prev[current] === 'function' ) {
+	                            prev[current](newValue);
+	                        } else {
+	                            prev[current] = newValue;
+	                        }
+	                    } else {
+	                        return prev[current];
+	                    }
+	                },record);
+	            } ;
+	        setter.call(record,newValue,property,config,record);
+	        
+	    },
+	    
+	    
+	    colsToMap : function(config) {
+	        var colsMap = {};
+	        
+	        config.cols.forEach( function(column)  {
+	            colsMap[column.property] = column;
+	        });
+	        
+	        return colsMap;
+	    },
+	    
+	    extractValue : function(property,path,record) {
+
+
+	        var value = "";
+
+	        /**
+	         * By default, we will use record[property] if path is not given.
+	         * If path is provided and is a string then will assume record[path]
+	         * If path is provided and is a function then we will call the function.
+	         * else we dont do anything
+	         */
+	        if ( typeof property === 'string' ) {
+	            if ( !path ) {
+	                value = record[property];
+	                if ( typeof(value) === 'function' ) {
+	                    value = value.call(record);
+	                }
+	            } else {
+	                if ( typeof path === 'string' ) {
+	                    value =  path.split(".").reduce(function(previous,current) {
+	                        if ( !previous || !current ) {
+	                            return null;
+	                        }
+	                        return previous[current];
+	                    },record);// record[path];
+	                } else {
+	                    //TODO: function check
+	                    value = path(property,record);
+	                }
+	            }
+	        }
+	        return value;
+	        
+	    },
+	    extractSortableType : function(v1,v2) {
+	      if ( typeof v1 === 'string' && typeof v2 === 'string') {
+	          return String;
+	      } else if ( typeof v1 === 'number' && typeof v2 === 'number') {
+	          return Number;
+	      } else if ( v1 instanceof Date && v2 instanceof Date ) {
+	          return Date;
+	      } else {
+	          return null;
+	      }
+	        
+	    },
+	    compare : function(type,val1,val2,direction) {
+	        if ( type === Number ) {
+	            if ( val1 && val2 ) {
+	                return (val2 - val1) * direction;
+	            } else if ( val1 && !val2 ) {
+	                return val1 * direction;
+	            } else if ( !val1 && val2 ) {
+	                return val2 * direction;
+	            } else {
+	                return 0;
+	            }
+	        } else  { //string sort
+	            if ( val1  ) {
+	                return val1.localeCompare(val2) * direction;
+	            } else if ( val2 ) {
+	                return val2.localeCompare(val1) * direction;
+	            } else {
+	                return 0;
+	            }
+	        }
+	        return 0;
+	        //FIXME how about date? slacker!
+	    }
+	    
+	}
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
 	
 	'use strict';
 
@@ -524,7 +653,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Pager;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -579,7 +708,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTRow;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -667,22 +796,33 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097, esnext: true */
+	"use strict";
+
 	var React = __webpack_require__(1);
-	var RDTRow = __webpack_require__(6);
+	var RDTRow = __webpack_require__(7);
 
 	/**
 	 * React Component for Body
 	 *
 	 */
 	var RDTBody = React.createClass({displayName: "RDTBody",
-
+	    
+	    handleRecordUpdate : function(record,recordIdx,property,newValue) {
+	        this.refs[recordIdx].forceUpdate();
+	    },
+	    
+	    componentDidMount : function() {
+	        this.props.datasource.on("RECORD_UPDATED",this.handleRecordUpdate);
+	    },
 
 	    render: function() {
-
+	        /*jshint ignore:start */
 	        return(
 	            React.createElement("tbody", null, 
 	                
@@ -695,11 +835,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        if (realIdx && !Array.isArray(realIdx)) {
 	                            id = realIdx;
 	                        }
-	                        return React.createElement(RDTRow, {datasource: this.props.datasource, index: id, key: id, record: data, config: this.props.config})
+	                        return React.createElement(RDTRow, {ref: id, datasource: this.props.datasource, index: id, key: id, record: data, config: this.props.config})
 	                    }.bind(this))
 	                
 	            )
 	        )
+	        /*jshint ignore:end */
 
 	    }
 	});
@@ -708,7 +849,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTBody;
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -772,135 +913,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	module.exports = Paginator;
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*globals require,module */
-	/* jshint -W097, esnext: true */
-	"use strict";
-
-	module.exports = {
-	    
-	    updateRecord : function(property,newValue,colConfig,record) {
-
-	        var config = colConfig;
-	        var path = config.path ? config.path : property;
-
-	        var setter = config.setter ?
-
-	            //setter can be a string or an actual function -- derp
-	            function(newValue,property,config) {
-	                var thesetter = config.setter;
-	                if ( typeof(config.setter) === 'string' ) {
-	                    record[config.setter](newValue, property, config);
-	                } else {
-	                    //assume function
-	                    thesetter.call(record,newValue, property, config);
-	                }
-
-	            }:
-	            function() {
-	                path.split(".").reduce(function(prev,current,index,arr) {
-	                    if ( index === (arr.length - 1) ) {
-	                        //we are at the end
-	                        if ( typeof prev[current] === 'function' ) {
-	                            prev[current](newValue);
-	                        } else {
-	                            prev[current] = newValue;
-	                        }
-	                    } else {
-	                        return prev[current];
-	                    }
-	                },record);
-	            } ;
-	        setter.call(record,newValue,property,config);
-	        
-	    },
-	    
-	    
-	    colsToMap : function(config) {
-	        var colsMap = {};
-	        
-	        config.cols.forEach( function(column)  {
-	            colsMap[column.property] = column;
-	        });
-	        
-	        return colsMap;
-	    },
-	    
-	    extractValue : function(property,path,record) {
-
-
-	        var value = "";
-
-	        /**
-	         * By default, we will use record[property] if path is not given.
-	         * If path is provided and is a string then will uspltle record[path]
-	         * If path is provided and is a function then we will call the function.
-	         * else we dont do anything
-	         */
-	        if ( typeof property === 'string' ) {
-	            if ( !path ) {
-	                value = record[property];
-	                if ( typeof(value) === 'function' ) {
-	                    value = value.call(record);
-	                }
-	            } else {
-	                if ( typeof path === 'string' ) {
-	                    value =  path.split(".").reduce(function(previous,current) {
-	                        if ( !previous || !current ) {
-	                            return null;
-	                        }
-	                        return previous[current];
-	                    },record);// record[path];
-	                } else {
-	                    //TODO: function check
-	                    value = path(property,record);
-	                }
-	            }
-	        }
-	        return value;
-	        
-	    },
-	    extractSortableType : function(v1,v2) {
-	      if ( typeof v1 === 'string' && typeof v2 === 'string') {
-	          return String;
-	      } else if ( typeof v1 === 'number' && typeof v2 === 'number') {
-	          return Number;
-	      } else if ( v1 instanceof Date && v2 instanceof Date ) {
-	          return Date;
-	      } else {
-	          return null;
-	      }
-	        
-	    },
-	    compare : function(type,val1,val2,direction) {
-	        if ( type === Number ) {
-	            if ( val1 && val2 ) {
-	                return (val2 - val1) * direction;
-	            } else if ( val1 && !val2 ) {
-	                return val1 * direction;
-	            } else if ( !val1 && val2 ) {
-	                return val2 * direction;
-	            } else {
-	                return 0;
-	            }
-	        } else  { //string sort
-	            if ( val1  ) {
-	                return val1.localeCompare(val2) * direction;
-	            } else if ( val2 ) {
-	                return val2.localeCompare(val1) * direction;
-	            } else {
-	                return 0;
-	            }
-	        }
-	        return 0;
-	        //FIXME how about date? slacker!
-	    }
-	    
-	}
 
 /***/ },
 /* 11 */
@@ -1220,7 +1232,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    
 	var React = __webpack_require__(1);
 
-	var utils = __webpack_require__(10);
+	var utils = __webpack_require__(5);
 
 	/**
 	 * React Component for Cell.
@@ -1312,7 +1324,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            datasource.updateRecord(this.props.index,this.props.property,newValue,this.props.col);
 
-	            this.setState( {  editMode : false } );
+	            this.setState( { editMode : false } );
 	            if ( this.props.onCellChange ) {
 	                this.props.onCellChange();
 	            }
@@ -1328,9 +1340,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    getInitialState: function() {
-	        return { editMode : false };
+	        return { record: this.props.record, editMode : false };
 	    },
-
 
 
 	    /**

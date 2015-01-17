@@ -97,7 +97,7 @@ var RDTCell = React.createClass({
 
             datasource.updateRecord(this.props.index,this.props.property,newValue,this.props.col);
 
-            this.setState( {  editMode : false } );
+            this.setState( { editMode : false } );
             if ( this.props.onCellChange ) {
                 this.props.onCellChange();
             }
@@ -113,9 +113,8 @@ var RDTCell = React.createClass({
     },
 
     getInitialState: function() {
-        return { editMode : false };
+        return { record: this.props.record, editMode : false };
     },
-
 
 
     /**

@@ -15,10 +15,10 @@ module.exports = {
             function(newValue,property,config) {
                 var thesetter = config.setter;
                 if ( typeof(config.setter) === 'string' ) {
-                    record[config.setter](newValue, property, config);
+                    record[config.setter](newValue, property, config,record);
                 } else {
                     //assume function
-                    thesetter.call(record,newValue, property, config);
+                    thesetter.call(record,newValue, property, config,record);
                 }
 
             }:
@@ -36,7 +36,7 @@ module.exports = {
                     }
                 },record);
             } ;
-        setter.call(record,newValue,property,config);
+        setter.call(record,newValue,property,config,record);
         
     },
     
@@ -58,7 +58,7 @@ module.exports = {
 
         /**
          * By default, we will use record[property] if path is not given.
-         * If path is provided and is a string then will uspltle record[path]
+         * If path is provided and is a string then will assume record[path]
          * If path is provided and is a function then we will call the function.
          * else we dont do anything
          */

@@ -1,4 +1,8 @@
 /** @jsx React.DOM */
+/*globals require,module */
+/* jshint -W097, esnext: true */
+"use strict";
+
 var React = require('react');
 var RDTRow = require("./row");
 
@@ -7,10 +11,17 @@ var RDTRow = require("./row");
  *
  */
 var RDTBody = React.createClass({
-
+    
+    handleRecordUpdate : function(record,recordIdx,property,newValue) {
+        this.refs[recordIdx].forceUpdate();
+    },
+    
+    componentDidMount : function() {
+        this.props.datasource.on("RECORD_UPDATED",this.handleRecordUpdate);
+    },
 
     render: function() {
-
+        /*jshint ignore:start */
         return(
             <tbody>
                 {
@@ -23,11 +34,12 @@ var RDTBody = React.createClass({
                         if (realIdx && !Array.isArray(realIdx)) {
                             id = realIdx;
                         }
-                        return <RDTRow datasource={this.props.datasource} index={id}  key={id}  record={data} config={this.props.config} />
+                        return <RDTRow ref={id} datasource={this.props.datasource} index={id}  key={id}  record={data} config={this.props.config} />
                     }.bind(this))
                 }
             </tbody>
         )
+        /*jshint ignore:end */
 
     }
 });
