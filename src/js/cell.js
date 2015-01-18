@@ -146,6 +146,79 @@ var RDTCell = React.createClass({
         return utils.extractValue(property,this.props.datasource.propertyConfigMap[property].path,this.props.record);
     },
 
+    /**
+     * If there is a specified renderer, then use that to render the cell
+     *
+     */
+        //value, formattedValue, cellDecoration, property, record
+    renderElement : function(value, formattedValue, cellDecoration, property, record) {
+        var renderer = this.props.col.renderer;
+        
+        if ( typeof renderer === 'function' ) {
+            try {
+                return renderer.call(renderer,value,formattedValue,cellDecoration,property,record,React);
+            } catch ( e ) {
+                console.log(e);
+                return null;
+            } 
+        }
+    },
+
+    /**
+     * By default if the decorator is a string or returns  a string, 
+     * then it uses it as className. If object is returned then the following is expected
+     * 
+     * {
+     *    className : "cls1 cls2", //the class applied to the container td
+     *    style : { color : "red" }, //the style applied to the container td
+     *    cellClassName: "cls1 cls2" //the classname applied to the cell div
+     *    cellStyle : { color : "red" }, //the style applied to the cell div
+     * 
+     * } 
+     * 
+     *  
+     * @param value
+     * @param property
+     * @param record
+     * @returns {{className: string, style: {}}}
+     */
+    tdCellDecoration : function(value,property,record) {
+        
+        var decorator =  this.props.col.decorator;
+        var decoration = null;
+        var className = "";
+        var style = {};
+        var cellClassName = "";
+        var cellStyle = {};
+        
+        if ( typeof decorator === 'function' ) {
+            try {
+                decoration = decorator.call(decorator,value,property,record);
+
+                if ( typeof decoration === 'string' ) {
+                    className = decoration;
+                } else  {
+                    className = decoration.className || "";
+                    style = decoration.style || {};
+                    cellClassName = decoration.cellClassName || "";
+                    cellStyle = decoration.cellStyle || {};
+                }
+            } catch ( e ) {
+                console.log(e);
+            }
+        } else if ( typeof decorator === 'string' ) {
+            className = decorator;
+        }
+        return {
+            className : className,
+            style : style,
+            cellClassName : cellClassName,
+            cellStyle : cellStyle
+        }
+    }
+        
+    ,
+    
     render: function() {
 
 
@@ -153,16 +226,28 @@ var RDTCell = React.createClass({
         var property = this.props.property;
 
         var value = this.getValue();
-
+        var formattedValue = null;
          //FIXME ensure its a function
         if ( this.props.col.formatter ) {
             //pass the underlying record
-            value = this.props.col.formatter(value,property,record,React);
+            formattedValue = this.props.col.formatter(value,property,record,React);
+        } else {
+            formattedValue = value;
         }
-
+        var decoration = this.tdCellDecoration(value,property,record);
+        
+        var renderedValue = null; 
+        
+        if ( this.props.col.renderer ) {
+            renderedValue = this.renderElement( value, formattedValue, decoration, property, record );
+        } 
+        if ( !renderedValue ) {
+            renderedValue = <div>{formattedValue}</div>
+        }
+        
         return (
-            <td ref="td" onClick={this.onClickHandler} data-property={property} key={property}>
-                <div>{value}</div>
+            <td className={decoration.className} style={decoration.style} ref="td" onClick={this.onClickHandler} data-property={property} key={property}>
+                <div className={decoration.cellClassName} style={decoration.cellStyle}>{renderedValue}</div>
                 {this.createEditor()}
             </td>
         )

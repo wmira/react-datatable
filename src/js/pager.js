@@ -1,5 +1,7 @@
-
-'use strict';
+/** @jsx React.DOM */
+/*globals require,module */
+/* jshint -W097, esnext: true */
+"use strict";
 
 /**
  *
@@ -57,13 +59,14 @@ Pager.prototype.move = function(movement) {
 
 Pager.prototype.state = function() {
     return {
-        page : this.page + 1,
+        page : this.page,
         startIdx : this.startIdx,
         endIdx : this.endIdx,
-        rowsPerPage: this.rowsPerPage
-    }
+        rowsPerPage: this.rowsPerPage,
+        totalRecords : this.datasource.records.length,
+        totalPage : this.maxPage()
+    };
 };
-
 
 
 module.exports = Pager;

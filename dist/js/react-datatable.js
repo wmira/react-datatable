@@ -54,15 +54,34 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/*globals require,module */
+	/* jshint -W097, esnext: true */
 	"use strict";
 
 	var DataSource = __webpack_require__(2);
 
-	var RDT = __webpack_require__(4)(__webpack_require__(1),__webpack_require__(3));
-	RDT.datasource = function(data,mapper) {
-	    return new DataSource(data,mapper);
-	}
+	var RDT = __webpack_require__(9)(__webpack_require__(1),__webpack_require__(3));
 
+	/**
+	 * Include custom editors
+	 *  
+	 * @type {{}}
+	 */
+	var Editors = {
+	    
+	    
+	    
+	};
+
+	var Decorators = {
+	    
+	    classname : function(clsname) {
+	      
+
+	        
+	    }
+	    
+	};
 
 	module.exports = RDT;
 
@@ -82,7 +101,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	"use strict";
 
 	var EventEmitter = __webpack_require__(11).EventEmitter;
-	var utils = __webpack_require__(5);
+	var utils = __webpack_require__(10);
 
 
 	var EVENTS = {
@@ -92,6 +111,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 
+	var indexRecords = function() {
+	    
+	    var colsMap = this.propertyConfigMap;
+	    var records = this.records;
+	    var i;
+	    
+	    var indexdb = {};
+	    
+	    for ( i=0; i < records.length; i++ ) {
+	        var record= records[i];
+	        Object.keys(colsMap).forEach( function(key)  {
+	            var col = colsMap[key];
+	            var property = col.property;
+	            var index = indexdb[property] || ( indexdb[property] ={} );
+	            
+	            var value = utils.extractValue(property,col.path,record);
+	            var arr = index[value] || ( index[value] = []);
+	            arr.push(i);
+	        });
+	    }
+	    
+	    //console.log(indexdb);
+	    
+	};
+
 	/**
 	 * Create a new datasource using records array as a backing dataset
 	 * 
@@ -99,6 +143,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @constructor
 	 */
 	var DataSource = function(records,config) {
+	    
+	    //the hell is this doing here
 	    this.id = new Date();
 
 	    if ( records instanceof Array ) {
@@ -109,12 +155,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.records =  data[dataField];
 	    }
 	    this.config = config;
-	    if ( config ) {
+	    if ( this.config ) {
 	        this.propertyConfigMap = {};
 	        this.config.cols.forEach( function(col)  {
 	            this.propertyConfigMap[col.property] = col;
 	        }.bind(this));
 	    }
+
+	    //indexRecords.call(this);
 	};
 
 
@@ -187,7 +235,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var result = [];
 	    var counter = 0;
-
+	    console.log(pageState.endIdx);
 	    for ( var i = pageState.startIdx; i < pageState.endIdx; i++ ) {
 
 	        result.push(mapper(this.records[i],counter++,i));
@@ -226,12 +274,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var React = __webpack_require__(1);
 
 	var DataSource = __webpack_require__(2);
-	var Pager = __webpack_require__(6);
+	var Pager = __webpack_require__(4);
 
-	var RDTRow = __webpack_require__(7);
-	var RDTColumn = __webpack_require__(8);
-	var RDTBody = __webpack_require__(9);
-	var Paginator = __webpack_require__(10);
+	var RDTRow = __webpack_require__(5);
+	var RDTColumn = __webpack_require__(6);
+	var RDTBody = __webpack_require__(7);
+	var Paginator = __webpack_require__(8);
 
 
 
@@ -285,12 +333,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.setState(this._createStateFromProps(nextProps));
 	    },
 	    nextPage : function() {
-	        if ( this.pager ) {
-	            this.pager = this.pager.next();
-	            this.setState({ pager : this.pager.state() });
+	        if ( this.state.pager ) {
+	           // this.pager = this.pager.next();
+	            this.setState({ pager : this.state.pager.next() });
 	        }
 	    },
 
+	    /* REMOVING FOR NOW
 	    add : function(record) {
 	        this.ds.add(record);
 	        var pagerState = null;
@@ -300,7 +349,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        this.setState({ pager : pagerState });
 	    },
-
+	    */
 	    onDsChangeEvent : function() {
 	        if ( this.props.onChange ) {
 	            this.props.onChange();
@@ -309,19 +358,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    
 	    _createStateFromProps : function(props) {
 
-	        var datasource = null;
-	        var pager =  null;
+	        var state = {};
+	        
 	        if ( props.data  ) {
-	            datasource = new DataSource(props.data,props.config);
-
+	            state.datasource = new DataSource(props.data,props.config);
 	        }
 	        
+	        
 	        if (props.config.pager  ) {
-	            if (props.config.pager) {
-	                pager = new Pager(1, props.config.pager.rowsPerPage, datasource);
-	            }
+	            state.pager = new Pager(1, props.config.pager.rowsPerPage, state.datasource);
 	        }
-	        return { datasource: datasource,pager :pager };
+
+	        return  state; //{ datasource: datasource, pager : this.state.pager, pagerState: this.pager.state() };
 	    },
 
 	    /**
@@ -334,9 +382,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    pagerUpdated : function(page) {
-	        if ( this.pager ) {
-	            this.pager = this.pager.toPage(page);
-	            this.setState({ pager : this.pager.state() });
+	        if ( this.state.pager ) {
+	           // this.pager = this.pager.toPage(page);
+	            this.setState({ pager : this.state.pager.toPage(page) });
 	        }
 	    },
 
@@ -345,15 +393,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var tableStyle = TABLE_CSS[this.props.config.style];
 	        var config = this.props.config;
 	        var datasource = this.state.datasource;
-
+	        var pagerState = null;
 	        var paginator = null;
 	        /*jshint ignore:start */
 	        if ( this.state.pager ) {
-
-	            paginator =  React.createElement(Paginator, {datasource: datasource, config: this.props.config, pageChangedListener: this.pagerUpdated}) ;
+	            paginator =  React.createElement(Paginator, {pagerState: this.state.pager.state(), datasource: datasource, config: this.props.config, pageChangedListener: this.pagerUpdated})
 
 	        }
-
 	        return (
 	            React.createElement("div", {onClick: this.onClick}, 
 	                React.createElement("div", {className: "rdt-container", ref: "container"}, 
@@ -377,6 +423,385 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097, esnext: true */
+	"use strict";
+
+	/**
+	 *
+	 *
+	 * @param config The common config
+	 * @param datasource The datasource containing array of data
+	 * @param page The page to view
+	 * @constructor
+	 */
+	var Pager = function(page,rowsPerPage,datasource) {
+	    this.datasource= datasource;
+	    this.page = page;
+	    this.rowsPerPage = rowsPerPage;
+	    this.startIdx = (this.page - 1 ) * rowsPerPage;
+	    this.endIdx = ( this.startIdx + this.rowsPerPage ) < this.datasource.records.length ?
+	        ( this.startIdx + this.rowsPerPage ) : ( this.startIdx + ( this.datasource.records.length - this.startIdx ));
+	};
+
+
+	/**
+	 * Moves this pager forward and returns another pager
+	 *
+	 *
+	 * @param page
+	 * @returns Pager
+	 */
+	Pager.prototype.next = function() {
+
+	    return this.move(1);
+	};
+
+	Pager.prototype.previous = function() {
+	    return this.move(-1);
+	};
+	Pager.prototype.toPage = function(page) {
+	    return this.move(page - this.page);
+	};
+
+	Pager.prototype.maxPage= function() {
+	    var maxPage = parseInt(this.datasource.records.length / this.rowsPerPage);
+	    if ( ( this.datasource.records.length % this.rowsPerPage ) > 0 ) {
+	        maxPage += 1;
+	    }
+	    return maxPage;
+	};
+
+	Pager.prototype.move = function(movement) {
+	    var maxPage = this.maxPage();
+
+	    if ( ( this.page + movement ) > maxPage  || ( this.page + movement ) < 0 ) {
+	        return this;
+	    }
+	    return new Pager(this.page + movement,this.rowsPerPage,this.datasource);
+	};
+
+	Pager.prototype.state = function() {
+	    return {
+	        page : this.page,
+	        startIdx : this.startIdx,
+	        endIdx : this.endIdx,
+	        rowsPerPage: this.rowsPerPage,
+	        totalRecords : this.datasource.records.length,
+	        totalPage : this.maxPage()
+	    };
+	};
+
+
+	module.exports = Pager;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097 */
+	"use strict";
+	    
+	var React = __webpack_require__(1);
+
+	var RDTCell = __webpack_require__(12);
+
+	/**
+	 * React Component as a row
+	 *
+	 */
+	var RDTRow = React.createClass({displayName: "RDTRow",
+	    
+	    /*
+	    componentWillReceiveProps: function(nextProps) {
+	        this.setState({record : nextProps.record});
+	    },
+
+	    getInitialState: function() {
+	        return { record : this.props.record  };
+	    },
+	    
+
+
+	    onCellChange : function() {
+	       this.setState( { record : this.props.record });
+	    },*/
+
+	    render: function() {
+
+	        var cols = this.props.config.cols;
+	        var record = this.props.record;
+
+	        return (
+	            React.createElement("tr", {"data-index": this.props.index}, 
+	            
+	                cols.map(function (col,idx) {
+	                    return React.createElement(RDTCell, {config: this.props.config, onCellChange: this.onCellChange, index: this.props.index, key: idx, datasource: this.props.datasource, col: col, property: col.property, record: record, path: col.path})
+	                }.bind(this))
+	            
+	            )
+	        )
+
+	    }
+	});
+
+
+	module.exports = RDTRow;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097 */
+	"use strict";
+
+	var React = __webpack_require__(1);
+
+	var DIRECTION_UP = "1";
+	var DIRECTION_DOWN = "-1";
+
+
+
+
+	var SortControl = React.createClass({displayName: "SortControl",
+	   
+
+	    
+	    render : function() {
+
+	        var arrowUp = (  this.props.isSortedColumn && this.props.direction === DIRECTION_UP ) ?
+	            "rdt-arrow-up-active" : "rdt-arrow-up-inactive";
+	        var arrowDown = ( this.props.isSortedColumn &&  this.props.direction === DIRECTION_DOWN ) ?
+	            "rdt-arrow-down-active" : "rdt-arrow-down-inactive";
+	        /*jshint ignore:start */
+	        return (React.createElement("div", {style:  { float: "right"} }, React.createElement("div", {
+	            "data-rdt-action": "sort", "data-col-property": this.props.col.property, "data-sort-direction": DIRECTION_UP, className: "rdt-arrow-up " + arrowUp}), React.createElement("div", {style: {"marginBottom": "5px"}}), 
+	                React.createElement("div", {"data-rdt-action": "sort", "data-col-property": this.props.col.property, "data-sort-direction": DIRECTION_DOWN, className: "rdt-arrow-down " + arrowDown})))
+	        /*jshint ignore:end */
+	    } 
+	    
+	});
+
+	/**
+	 * React Component for Columns
+	 *
+	 */
+	var RDTColumn = React.createClass({displayName: "RDTColumn",
+	    
+	    
+	    recordsSorted : function(sortedInfo) {
+	        this.setState({sortInfo: sortedInfo})
+	    },
+	    getInitialState : function() {
+	        var datasource =this.props.datasource;
+	        datasource.on("RECORDS_SORTED",this.recordsSorted);
+	        return { datasource : this.props.datasource, showFilter: false };
+	    },
+	    componentWillReceiveProps: function(nextProps) {
+	        if ( nextProps.datasource ) {
+	            nextProps.datasource.on("RECORDS_SORTED", this.recordsSorted);
+	        }
+	    },
+
+	    render: function() {
+
+	        var cols = this.props.config.cols;
+	        var datasource = this.state.datasource;
+	        
+	        var sortedInfo = this.state.sortInfo; //datasource.sortedInfo;
+	        return(
+	            React.createElement("thead", {onClick: this.onClick}, 
+	                React.createElement("tr", null, 
+	                    cols.map(function(col,idx) {
+	                        var isSortedColumn = false;
+	                        var direction = null;
+
+	                        if ( sortedInfo && sortedInfo.property === col.property ) {
+	                            isSortedColumn = true;
+	                            direction = sortedInfo.direction;
+	                        }
+	                        return (
+	                            React.createElement("td", {"data-th-key": col.property, key: col.property + "-th-" + idx}, 
+	                                React.createElement("div", null, React.createElement("span", null, col.header), React.createElement(SortControl, {isSortedColumn: isSortedColumn, direction: direction, col: col}))
+	                            )
+	                        )
+	                    }.bind(this))
+	                
+	                )
+	            )
+	        )
+
+	    }
+	});
+
+
+	module.exports = RDTColumn;
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097, esnext: true */
+	"use strict";
+
+	var React = __webpack_require__(1);
+	var RDTRow = __webpack_require__(5);
+
+	/**
+	 * React Component for Body
+	 *
+	 */
+	var RDTBody = React.createClass({displayName: "RDTBody",
+	    
+	    handleRecordUpdate : function(record,recordIdx,property,newValue) {
+	        this.refs[recordIdx].forceUpdate();
+	    },
+	    
+	    componentDidMount : function() {
+	        this.props.datasource.on("RECORD_UPDATED",this.handleRecordUpdate);
+	    },
+
+	    render: function() {
+	        /*jshint ignore:start */
+	        return(
+	            React.createElement("tbody", null, 
+	                
+	                    this.props.datasource.map(this.props.pager, function (data, idx, realIdx) {
+
+	                        //if this is a normal array map function, then realIdx here is the underlying array
+	                        //if the map came from us, then realIdx is the real index. if we are on a page, then idx will point to
+	                        //the index on the current view
+	                        var id = idx;
+	                        if (realIdx && !Array.isArray(realIdx)) {
+	                            id = realIdx;
+	                        }
+	                        return React.createElement(RDTRow, {ref: id, datasource: this.props.datasource, index: id, key: id, record: data, config: this.props.config})
+	                    }.bind(this))
+	                
+	            )
+	        )
+	        /*jshint ignore:end */
+
+	    }
+	});
+
+
+	module.exports = RDTBody;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM */
+	/*globals require,module */
+	/* jshint -W097, esnext: true */
+	"use strict";
+
+	var React = __webpack_require__(1);
+
+
+	/**
+	 * React Component for Columns
+	 *
+	 */
+	var Paginator = React.createClass({displayName: "Paginator",
+
+
+	    
+	    pagerClickListener : function(e) {
+	        var target = e.target;
+	        var page = target.getAttribute("data-page");
+
+	        if ( page ) {
+	            page = parseInt(page);
+	            this.props.pageChangedListener(page);
+	        }
+	    },
+	    /**
+	     * If rendered is called it means we have a paginator
+	     *
+	     * @returns {XML}
+	     */
+	    render: function() {
+
+	        var ps = this.props.pagerState;
+	        var visiblePager = 3;
+	        var startPage = ps.page;
+	        var lastFFClass = "";
+	        var startFFClass = "";
+	        
+	        //FIXME please!
+	        var generatePager = function() {
+	            
+	            var pagerComponents = [];
+
+	            pagerComponents.push(
+	                /*jshint ignore:start */
+	                (React.createElement("li", {className: startFFClass}, 
+	                    React.createElement("span", null, 
+	                        React.createElement("span", null, "«")
+	                    )
+	                ))
+	                /*jshint ignore:end */
+	            );
+	            
+	            for ( var i=startPage; i < (startPage+visiblePager); i++ ) {
+	                var cls = "";
+	                if ( i === ps.page ) {
+	                    cls="active";
+	                }
+	                pagerComponents.push(
+	                    /*jshint ignore:start */
+	                    (React.createElement("li", {className: cls}, React.createElement("a", {"data-page": i}, i)))
+	                    /*jshint ignore:end */
+	                );
+	            }
+	            
+	            pagerComponents.push(
+	                /*jshint ignore:start */
+	                (React.createElement("li", {className: lastFFClass}, 
+	                    React.createElement("span", null, 
+	                        React.createElement("span", null, "»")
+	                    )
+	                ))
+	                /*jshint ignore:end */
+	            );
+	            return pagerComponents;
+	            
+	        };
+	        
+	        
+	        
+	        /*jshint ignore:start */
+	        return(
+	            React.createElement("div", {onClick: this.pagerClickListener, className: "rdt-paginator"}, 
+	                React.createElement("ul", {className: "pagination pagination-sm rdt-paginator-pager"}, 
+	                    
+	                        generatePager()
+	                    
+	                )
+	            )
+	        )
+	  
+	        /*jshint ignore:end */
+	    }
+	});
+
+
+	module.exports = Paginator;
+
+/***/ },
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*globals require,module,React */
@@ -450,7 +875,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 5 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*globals require,module */
@@ -577,342 +1002,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    
 	}
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	'use strict';
-
-	/**
-	 *
-	 *
-	 * @param config The common config
-	 * @param datasource The datasource containing array of data
-	 * @param page The page to view
-	 * @constructor
-	 */
-	var Pager = function(page,rowsPerPage,datasource) {
-	    this.datasource= datasource;
-	    this.page = page;
-	    this.rowsPerPage = rowsPerPage;
-	    this.startIdx = (this.page - 1 ) * rowsPerPage;
-	    this.endIdx = ( this.startIdx + this.rowsPerPage ) < this.datasource.records.length ?
-	        ( this.startIdx + this.rowsPerPage ) : ( this.startIdx + ( this.datasource.records.length - this.startIdx ));
-	};
-
-
-	/**
-	 * Moves this pager forward and returns another pager
-	 *
-	 *
-	 * @param page
-	 * @returns Pager
-	 */
-	Pager.prototype.next = function() {
-
-	    return this.move(1);
-	};
-
-	Pager.prototype.previous = function() {
-	    return this.move(-1);
-	};
-	Pager.prototype.toPage = function(page) {
-	    return this.move(page - this.page);
-	};
-
-	Pager.prototype.maxPage= function() {
-	    var maxPage = parseInt(this.datasource.records.length / this.rowsPerPage);
-	    if ( ( this.datasource.records.length % this.rowsPerPage ) > 0 ) {
-	        maxPage += 1;
-	    }
-	    return maxPage;
-	};
-
-	Pager.prototype.move = function(movement) {
-	    var maxPage = this.maxPage();
-
-	    if ( ( this.page + movement ) > maxPage  || ( this.page + movement ) < 0 ) {
-	        return this;
-	    }
-	    return new Pager(this.page + movement,this.rowsPerPage,this.datasource);
-	};
-
-	Pager.prototype.state = function() {
-	    return {
-	        page : this.page + 1,
-	        startIdx : this.startIdx,
-	        endIdx : this.endIdx,
-	        rowsPerPage: this.rowsPerPage
-	    }
-	};
-
-
-
-	module.exports = Pager;
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM */
-	/*globals require,module */
-	/* jshint -W097 */
-	"use strict";
-	    
-	var React = __webpack_require__(1);
-
-	var RDTCell = __webpack_require__(12);
-
-	/**
-	 * React Component as a row
-	 *
-	 */
-	var RDTRow = React.createClass({displayName: "RDTRow",
-	    
-	    /*
-	    componentWillReceiveProps: function(nextProps) {
-	        this.setState({record : nextProps.record});
-	    },
-
-	    getInitialState: function() {
-	        return { record : this.props.record  };
-	    },
-	    
-
-
-	    onCellChange : function() {
-	       this.setState( { record : this.props.record });
-	    },*/
-
-	    render: function() {
-
-	        var cols = this.props.config.cols;
-	        var record = this.props.record;
-
-	        return (
-	            React.createElement("tr", {"data-index": this.props.index}, 
-	            
-	                cols.map(function (col,idx) {
-	                    return React.createElement(RDTCell, {config: this.props.config, onCellChange: this.onCellChange, index: this.props.index, key: idx, datasource: this.props.datasource, col: col, property: col.property, record: record, path: col.path})
-	                }.bind(this))
-	            
-	            )
-	        )
-
-	    }
-	});
-
-
-	module.exports = RDTRow;
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM */
-	/*globals require,module */
-	/* jshint -W097 */
-	"use strict";
-
-	var React = __webpack_require__(1);
-
-	var DIRECTION_UP = "1";
-	var DIRECTION_DOWN = "-1";
-
-	var SortControl = React.createClass({displayName: "SortControl",
-	   
-
-	    
-	    render : function() {
-
-	        var arrowUp = (  this.props.isSortedColumn && this.props.direction == DIRECTION_UP ) ?
-	            "rdt-arrow-up-active" : "rdt-arrow-up-inactive";
-	        var arrowDown = ( this.props.isSortedColumn &&  this.props.direction == DIRECTION_DOWN ) ?
-	            "rdt-arrow-down-active" : "rdt-arrow-down-inactive";
-
-	        return (React.createElement("div", {style:  { float: "right"} }, React.createElement("div", {
-	            "data-rdt-action": "sort", "data-col-property": this.props.col.property, "data-sort-direction": DIRECTION_UP, className: "rdt-arrow-up " + arrowUp}), React.createElement("div", {style: {"marginBottom": "5px"}}), 
-	                React.createElement("div", {"data-rdt-action": "sort", "data-col-property": this.props.col.property, "data-sort-direction": DIRECTION_DOWN, className: "rdt-arrow-down " + arrowDown})))
-	    } 
-	    
-	});
-
-	/**
-	 * React Component for Columns
-	 *
-	 */
-	var RDTColumn = React.createClass({displayName: "RDTColumn",
-	    
-	    
-	    recordsSorted : function(sortedInfo) {
-	        this.setState({sortInfo: sortedInfo})
-	    },
-	    getInitialState : function() {
-	        var datasource =this.props.datasource;
-	        datasource.on("RECORDS_SORTED",this.recordsSorted);
-	        return { datasource : this.props.datasource };
-	    },
-	    componentWillReceiveProps: function(nextProps) {
-	        if ( nextProps.datasource ) {
-	            nextProps.datasource.on("RECORDS_SORTED", this.recordsSorted);
-	        }
-	    },
-
-	    render: function() {
-
-	        var cols = this.props.config.cols;
-	        var datasource = this.state.datasource;
-	        
-	        var sortedInfo = this.state.sortInfo; //datasource.sortedInfo;
-	        return(
-	            React.createElement("thead", {onClick: this.onClick}, 
-	                React.createElement("tr", null, 
-	                    cols.map(function(col,idx) {
-	                        var isSortedColumn = false;
-	                        var direction = null;
-
-	                        if ( sortedInfo && sortedInfo.property === col.property ) {
-	                            isSortedColumn = true;
-	                            direction = sortedInfo.direction;
-	                        }
-	                        return (
-	                            React.createElement("td", {"data-th-key": col.property, key: col.property + "-th-" + idx}, 
-	                                React.createElement("div", null, React.createElement("span", null, col.header), React.createElement(SortControl, {isSortedColumn: isSortedColumn, direction: direction, col: col}))
-	                            )
-	                        )
-	                    }.bind(this))
-	                
-	                )
-	            )
-	        )
-
-	    }
-	});
-
-
-	module.exports = RDTColumn;
-
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM */
-	/*globals require,module */
-	/* jshint -W097, esnext: true */
-	"use strict";
-
-	var React = __webpack_require__(1);
-	var RDTRow = __webpack_require__(7);
-
-	/**
-	 * React Component for Body
-	 *
-	 */
-	var RDTBody = React.createClass({displayName: "RDTBody",
-	    
-	    handleRecordUpdate : function(record,recordIdx,property,newValue) {
-	        this.refs[recordIdx].forceUpdate();
-	    },
-	    
-	    componentDidMount : function() {
-	        this.props.datasource.on("RECORD_UPDATED",this.handleRecordUpdate);
-	    },
-
-	    render: function() {
-	        /*jshint ignore:start */
-	        return(
-	            React.createElement("tbody", null, 
-	                
-	                    this.props.datasource.map(this.props.pager, function (data, idx, realIdx) {
-
-	                        //if this is a normal array map function, then realIdx here is the underlying array
-	                        //if the map came from us, then realIdx is the real index. if we are on a page, then idx will point to
-	                        //the index on the current view
-	                        var id = idx;
-	                        if (realIdx && !Array.isArray(realIdx)) {
-	                            id = realIdx;
-	                        }
-	                        return React.createElement(RDTRow, {ref: id, datasource: this.props.datasource, index: id, key: id, record: data, config: this.props.config})
-	                    }.bind(this))
-	                
-	            )
-	        )
-	        /*jshint ignore:end */
-
-	    }
-	});
-
-
-	module.exports = RDTBody;
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM */
-	var React = __webpack_require__(1);
-
-
-	/**
-	 * React Component for Columns
-	 *
-	 */
-	var Paginator = React.createClass({displayName: "Paginator",
-
-	    getInitialState: function() {
-	        return { page: this.props.page };
-	    },
-
-	    componentWillReceiveProps: function(props) {
-	        this.setState({ page : props.page });
-	    },
-
-	    pageSelectionHandler : function() {
-	        if ( this.props.pageChangedListener ) {
-	            this.props.pageChangedListener(this.refs.pageSelection.getDOMNode().value);
-	        }
-	    },
-
-	    /**
-	     * If rendered is called it means we have a paginator
-	     *
-	     * @returns {XML}
-	     */
-	    render: function() {
-
-	        var currentPage = this.state.page;
-
-	        var pages = [];
-	        var maxPages = parseInt(this.props.datasource.records.length / this.props.config.pager.rowsPerPage);
-	        if ( ( this.props.datasource.records.length % this.props.config.pager.rowsPerPage ) != 0 ) {
-	            maxPages += 1;
-	        }
-	        for ( var i=1; i <= maxPages; i++ ) {
-	            pages.push(i);
-	        }
-
-	        return(
-	            React.createElement("div", {className: "rdt-paginator"}, 
-	                React.createElement("div", null, 
-	                React.createElement("select", {value: currentPage, ref: "pageSelection", onChange: this.pageSelectionHandler}, 
-	                
-	                    pages.map(function (pageNum) {
-	                        return React.createElement("option", {key: pageNum, value: pageNum}, pageNum)
-	                    })
-	                
-	                )
-	                )
-	            )
-	        )
-
-	    }
-	});
-
-
-	module.exports = Paginator;
 
 /***/ },
 /* 11 */
@@ -1232,7 +1321,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    
 	var React = __webpack_require__(1);
 
-	var utils = __webpack_require__(5);
+	var utils = __webpack_require__(10);
 
 	/**
 	 * React Component for Cell.
@@ -1373,6 +1462,79 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return utils.extractValue(property,this.props.datasource.propertyConfigMap[property].path,this.props.record);
 	    },
 
+	    /**
+	     * If there is a specified renderer, then use that to render the cell
+	     *
+	     */
+	        //value, formattedValue, cellDecoration, property, record
+	    renderElement : function(value, formattedValue, cellDecoration, property, record) {
+	        var renderer = this.props.col.renderer;
+	        
+	        if ( typeof renderer === 'function' ) {
+	            try {
+	                return renderer.call(renderer,value,formattedValue,cellDecoration,property,record,React);
+	            } catch ( e ) {
+	                console.log(e);
+	                return null;
+	            } 
+	        }
+	    },
+
+	    /**
+	     * By default if the decorator is a string or returns  a string, 
+	     * then it uses it as className. If object is returned then the following is expected
+	     * 
+	     * {
+	     *    className : "cls1 cls2", //the class applied to the container td
+	     *    style : { color : "red" }, //the style applied to the container td
+	     *    cellClassName: "cls1 cls2" //the classname applied to the cell div
+	     *    cellStyle : { color : "red" }, //the style applied to the cell div
+	     * 
+	     * } 
+	     * 
+	     *  
+	     * @param value
+	     * @param property
+	     * @param record
+	     * @returns {{className: string, style: {}}}
+	     */
+	    tdCellDecoration : function(value,property,record) {
+	        
+	        var decorator =  this.props.col.decorator;
+	        var decoration = null;
+	        var className = "";
+	        var style = {};
+	        var cellClassName = "";
+	        var cellStyle = {};
+	        
+	        if ( typeof decorator === 'function' ) {
+	            try {
+	                decoration = decorator.call(decorator,value,property,record);
+
+	                if ( typeof decoration === 'string' ) {
+	                    className = decoration;
+	                } else  {
+	                    className = decoration.className || "";
+	                    style = decoration.style || {};
+	                    cellClassName = decoration.cellClassName || "";
+	                    cellStyle = decoration.cellStyle || {};
+	                }
+	            } catch ( e ) {
+	                console.log(e);
+	            }
+	        } else if ( typeof decorator === 'string' ) {
+	            className = decorator;
+	        }
+	        return {
+	            className : className,
+	            style : style,
+	            cellClassName : cellClassName,
+	            cellStyle : cellStyle
+	        }
+	    }
+	        
+	    ,
+	    
 	    render: function() {
 
 
@@ -1380,16 +1542,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var property = this.props.property;
 
 	        var value = this.getValue();
-
+	        var formattedValue = null;
 	         //FIXME ensure its a function
 	        if ( this.props.col.formatter ) {
 	            //pass the underlying record
-	            value = this.props.col.formatter(value,property,record,React);
+	            formattedValue = this.props.col.formatter(value,property,record,React);
+	        } else {
+	            formattedValue = value;
 	        }
-
+	        var decoration = this.tdCellDecoration(value,property,record);
+	        
+	        var renderedValue = null; 
+	        
+	        if ( this.props.col.renderer ) {
+	            renderedValue = this.renderElement( value, formattedValue, decoration, property, record );
+	        } 
+	        if ( !renderedValue ) {
+	            renderedValue = React.createElement("div", null, formattedValue)
+	        }
+	        
 	        return (
-	            React.createElement("td", {ref: "td", onClick: this.onClickHandler, "data-property": property, key: property}, 
-	                React.createElement("div", null, value), 
+	            React.createElement("td", {className: decoration.className, style: decoration.style, ref: "td", onClick: this.onClickHandler, "data-property": property, key: property}, 
+	                React.createElement("div", {className: decoration.cellClassName, style: decoration.cellStyle}, renderedValue), 
 	                this.createEditor()
 	            )
 	        )

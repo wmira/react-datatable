@@ -65,12 +65,13 @@ var RDT = React.createClass({
         this.setState(this._createStateFromProps(nextProps));
     },
     nextPage : function() {
-        if ( this.pager ) {
-            this.pager = this.pager.next();
-            this.setState({ pager : this.pager.state() });
+        if ( this.state.pager ) {
+           // this.pager = this.pager.next();
+            this.setState({ pager : this.state.pager.next() });
         }
     },
 
+    /* REMOVING FOR NOW
     add : function(record) {
         this.ds.add(record);
         var pagerState = null;
@@ -80,7 +81,7 @@ var RDT = React.createClass({
 
         this.setState({ pager : pagerState });
     },
-
+    */
     onDsChangeEvent : function() {
         if ( this.props.onChange ) {
             this.props.onChange();
@@ -89,19 +90,18 @@ var RDT = React.createClass({
     
     _createStateFromProps : function(props) {
 
-        var datasource = null;
-        var pager =  null;
+        var state = {};
+        
         if ( props.data  ) {
-            datasource = new DataSource(props.data,props.config);
-
+            state.datasource = new DataSource(props.data,props.config);
         }
         
+        
         if (props.config.pager  ) {
-            if (props.config.pager) {
-                pager = new Pager(1, props.config.pager.rowsPerPage, datasource);
-            }
+            state.pager = new Pager(1, props.config.pager.rowsPerPage, state.datasource);
         }
-        return { datasource: datasource,pager :pager };
+
+        return  state; //{ datasource: datasource, pager : this.state.pager, pagerState: this.pager.state() };
     },
 
     /**
@@ -114,9 +114,9 @@ var RDT = React.createClass({
     },
 
     pagerUpdated : function(page) {
-        if ( this.pager ) {
-            this.pager = this.pager.toPage(page);
-            this.setState({ pager : this.pager.state() });
+        if ( this.state.pager ) {
+           // this.pager = this.pager.toPage(page);
+            this.setState({ pager : this.state.pager.toPage(page) });
         }
     },
 
@@ -125,15 +125,13 @@ var RDT = React.createClass({
         var tableStyle = TABLE_CSS[this.props.config.style];
         var config = this.props.config;
         var datasource = this.state.datasource;
-
+        var pagerState = null;
         var paginator = null;
         /*jshint ignore:start */
         if ( this.state.pager ) {
-
-            paginator =  <Paginator datasource={datasource} config={this.props.config} pageChangedListener={this.pagerUpdated}/> ;
+            paginator =  <Paginator pagerState={this.state.pager.state()} datasource={datasource} config={this.props.config} pageChangedListener={this.pagerUpdated}/>
 
         }
-
         return (
             <div onClick={this.onClick}>
                 <div className="rdt-container" ref="container">

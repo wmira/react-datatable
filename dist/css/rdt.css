@@ -21,10 +21,20 @@
     overflow: auto;
 }
 
-.rdt-paginator > div {
+
+.rdt-paginator ul.rdt-paginator-pager {
+    margin: 0;
     float:right;
 }
 
+.rdt-paginator ul.rdt-paginator-pager > li > a {
+    cursor: pointer;
+    
+}
+
+.rdt-paginator ul.rdt-paginator-pager > li > span {
+    cursor: pointer;
+}
 
 .rdt-arrow-up {
     width: 0;

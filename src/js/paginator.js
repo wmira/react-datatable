@@ -1,4 +1,8 @@
 /** @jsx React.DOM */
+/*globals require,module */
+/* jshint -W097, esnext: true */
+"use strict";
+
 var React = require('react');
 
 
@@ -8,20 +12,17 @@ var React = require('react');
  */
 var Paginator = React.createClass({
 
-    getInitialState: function() {
-        return { page: this.props.page };
-    },
 
-    componentWillReceiveProps: function(props) {
-        this.setState({ page : props.page });
-    },
+    
+    pagerClickListener : function(e) {
+        var target = e.target;
+        var page = target.getAttribute("data-page");
 
-    pageSelectionHandler : function() {
-        if ( this.props.pageChangedListener ) {
-            this.props.pageChangedListener(this.refs.pageSelection.getDOMNode().value);
+        if ( page ) {
+            page = parseInt(page);
+            this.props.pageChangedListener(page);
         }
     },
-
     /**
      * If rendered is called it means we have a paginator
      *
@@ -29,31 +30,66 @@ var Paginator = React.createClass({
      */
     render: function() {
 
-        var currentPage = this.state.page;
+        var ps = this.props.pagerState;
+        var visiblePager = 3;
+        var startPage = ps.page;
+        var lastFFClass = "";
+        var startFFClass = "";
+        
+        //FIXME please!
+        var generatePager = function() {
+            
+            var pagerComponents = [];
 
-        var pages = [];
-        var maxPages = parseInt(this.props.datasource.records.length / this.props.config.pager.rowsPerPage);
-        if ( ( this.props.datasource.records.length % this.props.config.pager.rowsPerPage ) != 0 ) {
-            maxPages += 1;
-        }
-        for ( var i=1; i <= maxPages; i++ ) {
-            pages.push(i);
-        }
-
-        return(
-            <div className="rdt-paginator">
-                <div>
-                <select value={currentPage} ref="pageSelection" onChange={this.pageSelectionHandler}>
-                {
-                    pages.map(function (pageNum) {
-                        return <option key={pageNum} value={pageNum}>{pageNum}</option>
-                    })
+            pagerComponents.push(
+                /*jshint ignore:start */
+                (<li className={startFFClass}>
+                    <span>
+                        <span >&laquo;</span>
+                    </span>
+                </li>)
+                /*jshint ignore:end */
+            );
+            
+            for ( var i=startPage; i < (startPage+visiblePager); i++ ) {
+                var cls = "";
+                if ( i === ps.page ) {
+                    cls="active";
                 }
-                </select>
-                </div>
+                pagerComponents.push(
+                    /*jshint ignore:start */
+                    (<li className={cls}><a data-page={i}  >{i}</a></li>)
+                    /*jshint ignore:end */
+                );
+            }
+            
+            pagerComponents.push(
+                /*jshint ignore:start */
+                (<li className={lastFFClass}>
+                    <span>
+                        <span >&raquo;</span>
+                    </span>
+                </li>)
+                /*jshint ignore:end */
+            );
+            return pagerComponents;
+            
+        };
+        
+        
+        
+        /*jshint ignore:start */
+        return(
+            <div onClick={this.pagerClickListener} className="rdt-paginator">
+                <ul className="pagination pagination-sm rdt-paginator-pager">
+                    {
+                        generatePager()
+                    }
+                </ul>
             </div>
         )
-
+  
+        /*jshint ignore:end */
     }
 });
 

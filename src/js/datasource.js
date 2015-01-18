@@ -14,6 +14,31 @@ var EVENTS = {
 };
 
 
+var indexRecords = function() {
+    
+    var colsMap = this.propertyConfigMap;
+    var records = this.records;
+    var i;
+    
+    var indexdb = {};
+    
+    for ( i=0; i < records.length; i++ ) {
+        var record= records[i];
+        Object.keys(colsMap).forEach( key => {
+            var col = colsMap[key];
+            var property = col.property;
+            var index = indexdb[property] || ( indexdb[property] ={} );
+            
+            var value = utils.extractValue(property,col.path,record);
+            var arr = index[value] || ( index[value] = []);
+            arr.push(i);
+        });
+    }
+    
+    //console.log(indexdb);
+    
+};
+
 /**
  * Create a new datasource using records array as a backing dataset
  * 
@@ -21,6 +46,8 @@ var EVENTS = {
  * @constructor
  */
 var DataSource = function(records,config) {
+    
+    //the hell is this doing here
     this.id = new Date();
 
     if ( records instanceof Array ) {
@@ -31,12 +58,14 @@ var DataSource = function(records,config) {
         this.records =  data[dataField];
     }
     this.config = config;
-    if ( config ) {
+    if ( this.config ) {
         this.propertyConfigMap = {};
         this.config.cols.forEach( col => {
             this.propertyConfigMap[col.property] = col;
         });
     }
+
+    //indexRecords.call(this);
 };
 
 
@@ -109,7 +138,7 @@ DataSource.prototype.map = function(pageState,mapper) {
 
     var result = [];
     var counter = 0;
-
+    console.log(pageState.endIdx);
     for ( var i = pageState.startIdx; i < pageState.endIdx; i++ ) {
 
         result.push(mapper(this.records[i],counter++,i));

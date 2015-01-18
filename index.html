@@ -3,8 +3,8 @@
 
     <head>
         <title>RDT Demo</title>
-        <!-- <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css"> -->
-        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+        <!--  <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">-->
+      <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
 
         <link rel="stylesheet" href="dist/css/rdt.css"/>
         <style>
@@ -12,7 +12,14 @@
             body {
                 font-size: 12px;
             }
-
+            .age-tooyoung {
+                color : red;
+                font-weight: bold;
+            }
+            .age-justright {
+                color : blue;
+                font-weight: bold;
+            }
         </style>
     </head>
 <body>
@@ -79,27 +86,50 @@
     ];
 
     var numberFormatter = function(value,property,record) {
-        return "$" + value;
+        return "$ " + value;
     };
 
     var computeTax = function(property,record) {
         return  record['salary'] * 0.30;
     };
     var config = {
+       // pager: {
+       //     rowsPerPage: 5
+       // },
         style: 'bootstrap',
         cols: [
-            //{ property: "action",  sortable: false, header: "" , formatter : function(value,property,record,react) {return react.createElement("div",null,"Edit")}, clickHandler: function() { console.log("clicked") } },
-            { editable: true, property: "name", header: "Name" },
+            { property: "action",  sortable: false, header: "" , 
+                renderer : function(value,formattedValue,cellDecoration,property,record,React) {
+                    return React.createElement("span",{ className : "glyphicon glyphicon-edit"});
+                },
+                decorator : function() {
+                    return { cellStyle : { "textAlign" : "center" , cursor: "pointer" } };
+                }
+            },
+            { editable: true, property: "name", header: "Name"  },
             { property: "position", header: "Position"},
             { property: "office", resolve: "",  header: "Office" },
-            { property: "age", header: "Age", editable: true, setter: function(newValue,property,config) {
-                if ( newValue <= 18 ) {
-                    alert("Too young!");
-                    this.age = newValue;
-                } else {
-                    this.age = newValue;
+            { property: "age", header: "Age", editable: true, 
+                setter: function(newValue,property,config) {
+                    if ( newValue <= 18 ) {
+                        //alert("Too young!");
+                        this.age = newValue;
+                    } else {
+                        this.age = newValue;
+                    }
+                }, 
+                decorator : function(value,property,record) {
+                    
+                    if ( value < 18 ) {
+                        return {
+                            style : { "color" : "red", "fontWeight" : "bold" } //returning specific
+                        }
+                    } else if ( value > 18 && value < 40 ) {
+                        return "age-justright"; //returning classname is fine
+                    }
+                    return "";
                 }
-            }},
+            },
             { property: "tax", path: computeTax, header: "Tax", formatter: numberFormatter, type: Number},
             { editable: true, property: "salary", header: "Salary", formatter: numberFormatter }
         ]

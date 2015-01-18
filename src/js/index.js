@@ -1,11 +1,28 @@
+/*globals require,module */
+/* jshint -W097, esnext: true */
 "use strict";
 
-var DataSource = require("./datasource");
-
 var RDT = require("react-render-wrapper")(require("react"),require("./rdt"));
-RDT.datasource = function(data,mapper) {
-    return new DataSource(data,mapper);
-}
 
+
+/**
+ * Helpers
+ *  
+ * @type {{classname: Function}}
+ */
+var Decorator = {
+    
+    styles : function(clsname,style,cellClassname,cellStyle) {
+        return function() {
+            return {
+                className : clsname,
+                style : style,
+                cellClassName: cellClassname,
+                cellStyle : cellStyle
+            };
+        };
+    }
+    
+};
 
 module.exports = RDT;

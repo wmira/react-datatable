@@ -8,20 +8,24 @@ var React = require('react');
 var DIRECTION_UP = "1";
 var DIRECTION_DOWN = "-1";
 
+
+
+
 var SortControl = React.createClass({
    
 
     
     render : function() {
 
-        var arrowUp = (  this.props.isSortedColumn && this.props.direction == DIRECTION_UP ) ?
+        var arrowUp = (  this.props.isSortedColumn && this.props.direction === DIRECTION_UP ) ?
             "rdt-arrow-up-active" : "rdt-arrow-up-inactive";
-        var arrowDown = ( this.props.isSortedColumn &&  this.props.direction == DIRECTION_DOWN ) ?
+        var arrowDown = ( this.props.isSortedColumn &&  this.props.direction === DIRECTION_DOWN ) ?
             "rdt-arrow-down-active" : "rdt-arrow-down-inactive";
-
+        /*jshint ignore:start */
         return (<div style={ { float: "right"} }><div
             data-rdt-action="sort" data-col-property={this.props.col.property}   data-sort-direction={DIRECTION_UP} className={"rdt-arrow-up " + arrowUp}></div><div style={{"marginBottom": "5px"}}></div>
                 <div data-rdt-action="sort" data-col-property={this.props.col.property}   data-sort-direction={DIRECTION_DOWN} className={"rdt-arrow-down " + arrowDown}></div></div>)
+        /*jshint ignore:end */
     } 
     
 });
@@ -39,7 +43,7 @@ var RDTColumn = React.createClass({
     getInitialState : function() {
         var datasource =this.props.datasource;
         datasource.on("RECORDS_SORTED",this.recordsSorted);
-        return { datasource : this.props.datasource };
+        return { datasource : this.props.datasource, showFilter: false };
     },
     componentWillReceiveProps: function(nextProps) {
         if ( nextProps.datasource ) {
