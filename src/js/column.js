@@ -55,29 +55,39 @@ var RDTColumn = React.createClass({
 
         var cols = this.props.config.cols;
         var datasource = this.state.datasource;
-        
+
         var sortedInfo = this.state.sortInfo; //datasource.sortedInfo;
+        /*jshint ignore:start */
         return(
+            
             <thead onClick={this.onClick}>
                 <tr>{
                     cols.map(function(col,idx) {
                         var isSortedColumn = false;
                         var direction = null;
-
-                        if ( sortedInfo && sortedInfo.property === col.property ) {
+                        var sortable = col.sortable;
+                        var sortControl = null;
+                        
+                        if ( col.sosortedInfo && sortedInfo.property === col.property ) {
                             isSortedColumn = true;
                             direction = sortedInfo.direction;
                         }
+                        
+                        if ( sortable ) {
+                            sortControl = <SortControl isSortedColumn={isSortedColumn} direction={direction} col={col} />
+                        }
                         return (
                             <td data-th-key={col.property} key={col.property + "-th-" + idx}>
-                                <div><span>{col.header}</span><SortControl isSortedColumn={isSortedColumn} direction={direction} col={col} /></div>
+                                <div><span>{col.header}</span>{sortControl}</div>
                             </td>
                         )
                     }.bind(this))
                 }
                 </tr>
             </thead>
+            
         )
+        /*jshint ignore:end */
 
     }
 });

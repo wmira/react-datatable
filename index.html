@@ -4,8 +4,9 @@
     <head>
         <title>RDT Demo</title>
         <!--  <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">-->
-      <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
-
+        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+        <!--  <link rel="stylesheet" href="dist/css/main.css">
+        <link rel="stylesheet" href="dist/css/components.css">-->
         <link rel="stylesheet" href="dist/css/rdt.css"/>
         <style>
 
@@ -85,6 +86,12 @@
 
     ];
 
+    var positionIcons = {
+      
+        "Accountant" : "fa fa-calculator",
+        "Software Engineer" : "fa fa-cubes"
+    };
+    
     var numberFormatter = function(value,property,record) {
         return "$ " + value;
     };
@@ -95,7 +102,7 @@
     var config = {
        // pager: {
        //     rowsPerPage: 5
-       // },
+      //  },
         style: 'bootstrap',
         cols: [
             { property: "action",  sortable: false, header: "" , 
@@ -106,13 +113,13 @@
                     return { cellStyle : { "textAlign" : "center" , cursor: "pointer" } };
                 }
             },
-            { editable: true, property: "name", header: "Name"  },
+            { editable: true, property: "name", header: "Name" , sortable: true },
             { property: "position", header: "Position"},
             { property: "office", resolve: "",  header: "Office" },
             { property: "age", header: "Age", editable: true, 
                 setter: function(newValue,property,config) {
                     if ( newValue <= 18 ) {
-                        //alert("Too young!");
+
                         this.age = newValue;
                     } else {
                         this.age = newValue;

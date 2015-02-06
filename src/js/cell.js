@@ -137,6 +137,7 @@ var RDTCell = React.createClass({
         //editor can be a react component
         //
 
+      //  return ( <input  onBlur={this.onBlur} className="rdt-editor"
         return ( <input  onBlur={this.onBlur} className="rdt-editor"
             style={this.getDisplayStyle()} onKeyUp={this.onKeyUp} onChange={this.onInputChange} ref="input"  defaultValue={this.getValue()} /> );
     },
@@ -204,7 +205,7 @@ var RDTCell = React.createClass({
                     cellStyle = decoration.cellStyle || {};
                 }
             } catch ( e ) {
-                console.log(e);
+                throw new Error("Error on decorator: " + e);
             }
         } else if ( typeof decorator === 'string' ) {
             className = decorator;

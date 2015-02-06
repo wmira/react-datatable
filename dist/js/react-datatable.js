@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* jshint -W097, esnext: true */
 	"use strict";
 
-	var RDT = __webpack_require__(3)(__webpack_require__(1),__webpack_require__(2));
+	var RDT = __webpack_require__(9)(__webpack_require__(1),__webpack_require__(2));
 
 
 	/**
@@ -100,13 +100,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var React = __webpack_require__(1);
 
-	var DataSource = __webpack_require__(4);
-	var Pager = __webpack_require__(5);
+	var DataSource = __webpack_require__(3);
+	var Pager = __webpack_require__(4);
 
-	var RDTRow = __webpack_require__(6);
-	var RDTColumn = __webpack_require__(7);
-	var RDTBody = __webpack_require__(8);
-	var Paginator = __webpack_require__(9);
+	var RDTRow = __webpack_require__(5);
+	var RDTColumn = __webpack_require__(6);
+	var RDTBody = __webpack_require__(7);
+	var Paginator = __webpack_require__(8);
 
 
 
@@ -122,6 +122,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    foundation: {
 	        table: ''
+	    },
+	    starter: {
+	        table: 'table2'
 	    }
 	};
 
@@ -228,7 +231,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        }
 	        return (
-	            React.createElement("div", {onClick: this.onClick}, 
+	            React.createElement("div", {onClick: this.onClick, style:  {width: '100%'}}, 
 	                React.createElement("div", {className: "rdt-container", ref: "container"}, 
 	                    React.createElement("table", {className: tableStyle['table']}, 
 	                        React.createElement(RDTColumn, React.__spread({},  this.props, {datasource: datasource})), 
@@ -250,80 +253,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*globals require,module,React */
-	"use strict";
-
-	/**
-	 * React instance creation is a bit noisy. Use this on react a library such
-	 * that its more direct to the point when creating new instance. E.g.
-	 *
-	   React.render(React.createElement(ViewPager,{ views : ["page11","page22","page33"], visible:"page11"}),
-	            document.getElementById("viewpager-container2"));
-	 * 
-	 * to something like
-	 *
-	 * ViewPager.render({ views : ["page1","page2","page3"], visible:"page1"},"viewpager-container");
-	 * or
-	 * ViewPager.render("viewpager-container");
-	 * 
-	 * If your are exposing a library then :
-	 * 
-	 * var renderWrapper = require("react-render");
-	 * var MyReactComponent = React.createClass... 
-	 * 
-	 * module.exports = renderWrapper(React,MyReactComponent)
-	 *
-	 */
-
-	/**
-	 * 
-	 * Shortcut to React.createElement(cls,option) 
-	 *
-	 */
-	var elWrapper = function(React,ReactClass,option) {
-	    return React.createElement(ReactClass,option);
-	};
-	    
-	var renderWrapper = function(React,ReactClass,options,el) {
-	    
-	    var ouroption = {};
-	    //if he passed an html element or a string on the first argument
-	    //then we assume he wants no options
-	    var ourEl = null;
-	    
-	    //check if its actually an element
-	    if ( ( options.tagName && options.nodeName && (typeof options.nodeType === 'number') ) 
-	        || ( typeof options === 'string' ) ) {
-	        ourEl = options;
-	    } else {
-	        ouroption = options;
-	        ourEl = ( typeof el === 'string') ? document.getElementById(el) : el;
-	    }
-
-	    return React.render(elWrapper(React,ReactClass,ouroption), ourEl);
-	};
-
-	var RenderWrapper = function(React,ReactClass) {
-
-	    return {
-	        cls : ReactClass,
-	        el : function(options) {
-	            return elWrapper(React,ReactClass,options);
-	        },
-	        render : function(options,el) {
-	            return renderWrapper(React,ReactClass,options,el)
-	        }
-	    }
-
-	};
-
-	module.exports = RenderWrapper;
-
-
-/***/ },
-/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -494,7 +423,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = DataSource;
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -571,7 +500,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Pager;
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -626,7 +555,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTRow;
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -686,29 +615,39 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var cols = this.props.config.cols;
 	        var datasource = this.state.datasource;
-	        
+
 	        var sortedInfo = this.state.sortInfo; //datasource.sortedInfo;
+	        /*jshint ignore:start */
 	        return(
+	            
 	            React.createElement("thead", {onClick: this.onClick}, 
 	                React.createElement("tr", null, 
 	                    cols.map(function(col,idx) {
 	                        var isSortedColumn = false;
 	                        var direction = null;
-
-	                        if ( sortedInfo && sortedInfo.property === col.property ) {
+	                        var sortable = col.sortable;
+	                        var sortControl = null;
+	                        
+	                        if ( col.sosortedInfo && sortedInfo.property === col.property ) {
 	                            isSortedColumn = true;
 	                            direction = sortedInfo.direction;
 	                        }
+	                        
+	                        if ( sortable ) {
+	                            sortControl = React.createElement(SortControl, {isSortedColumn: isSortedColumn, direction: direction, col: col})
+	                        }
 	                        return (
 	                            React.createElement("td", {"data-th-key": col.property, key: col.property + "-th-" + idx}, 
-	                                React.createElement("div", null, React.createElement("span", null, col.header), React.createElement(SortControl, {isSortedColumn: isSortedColumn, direction: direction, col: col}))
+	                                React.createElement("div", null, React.createElement("span", null, col.header), sortControl)
 	                            )
 	                        )
 	                    }.bind(this))
 	                
 	                )
 	            )
+	            
 	        )
+	        /*jshint ignore:end */
 
 	    }
 	});
@@ -718,7 +657,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -727,7 +666,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	"use strict";
 
 	var React = __webpack_require__(1);
-	var RDTRow = __webpack_require__(6);
+	var RDTRow = __webpack_require__(5);
 
 	/**
 	 * React Component for Body
@@ -771,7 +710,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTBody;
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -871,6 +810,80 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	module.exports = Paginator;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*globals require,module,React */
+	"use strict";
+
+	/**
+	 * React instance creation is a bit noisy. Use this on react a library such
+	 * that its more direct to the point when creating new instance. E.g.
+	 *
+	   React.render(React.createElement(ViewPager,{ views : ["page11","page22","page33"], visible:"page11"}),
+	            document.getElementById("viewpager-container2"));
+	 * 
+	 * to something like
+	 *
+	 * ViewPager.render({ views : ["page1","page2","page3"], visible:"page1"},"viewpager-container");
+	 * or
+	 * ViewPager.render("viewpager-container");
+	 * 
+	 * If your are exposing a library then :
+	 * 
+	 * var renderWrapper = require("react-render");
+	 * var MyReactComponent = React.createClass... 
+	 * 
+	 * module.exports = renderWrapper(React,MyReactComponent)
+	 *
+	 */
+
+	/**
+	 * 
+	 * Shortcut to React.createElement(cls,option) 
+	 *
+	 */
+	var elWrapper = function(React,ReactClass,option) {
+	    return React.createElement(ReactClass,option);
+	};
+	    
+	var renderWrapper = function(React,ReactClass,options,el) {
+	    
+	    var ouroption = {};
+	    //if he passed an html element or a string on the first argument
+	    //then we assume he wants no options
+	    var ourEl = null;
+	    
+	    //check if its actually an element
+	    if ( ( options.tagName && options.nodeName && (typeof options.nodeType === 'number') ) 
+	        || ( typeof options === 'string' ) ) {
+	        ourEl = options;
+	    } else {
+	        ouroption = options;
+	        ourEl = ( typeof el === 'string') ? document.getElementById(el) : el;
+	    }
+
+	    return React.render(elWrapper(React,ReactClass,ouroption), ourEl);
+	};
+
+	var RenderWrapper = function(React,ReactClass) {
+
+	    return {
+	        cls : ReactClass,
+	        el : function(options) {
+	            return elWrapper(React,ReactClass,options);
+	        },
+	        render : function(options,el) {
+	            return renderWrapper(React,ReactClass,options,el)
+	        }
+	    }
+
+	};
+
+	module.exports = RenderWrapper;
+
 
 /***/ },
 /* 10 */
@@ -1144,6 +1157,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //editor can be a react component
 	        //
 
+	      //  return ( <input  onBlur={this.onBlur} className="rdt-editor"
 	        return ( React.createElement("input", {onBlur: this.onBlur, className: "rdt-editor", 
 	            style: this.getDisplayStyle(), onKeyUp: this.onKeyUp, onChange: this.onInputChange, ref: "input", defaultValue: this.getValue()}) );
 	    },
@@ -1211,7 +1225,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    cellStyle = decoration.cellStyle || {};
 	                }
 	            } catch ( e ) {
-	                console.log(e);
+	                throw new Error("Error on decorator: " + e);
 	            }
 	        } else if ( typeof decorator === 'string' ) {
 	            className = decorator;

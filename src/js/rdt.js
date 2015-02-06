@@ -27,6 +27,9 @@ var TABLE_CSS = {
     },
     foundation: {
         table: ''
+    },
+    starter: {
+        table: 'table2'
     }
 };
 
@@ -133,7 +136,7 @@ var RDT = React.createClass({
 
         }
         return (
-            <div onClick={this.onClick}>
+            <div onClick={this.onClick} style={ {width: '100%'}}>
                 <div className="rdt-container" ref="container">
                     <table className={tableStyle['table']}>
                         <RDTColumn {...this.props} datasource={datasource} />
