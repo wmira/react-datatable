@@ -138,9 +138,7 @@ DataSource.prototype.map = function(pageState,mapper) {
 
     var result = [];
     var counter = 0;
-    console.log(pageState.endIdx);
     for ( var i = pageState.startIdx; i < pageState.endIdx; i++ ) {
-
         result.push(mapper(this.records[i],counter++,i));
     }
 

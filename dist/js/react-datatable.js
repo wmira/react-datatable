@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* jshint -W097, esnext: true */
 	"use strict";
 
-	var RDT = __webpack_require__(9)(__webpack_require__(1),__webpack_require__(2));
+	var RDT = __webpack_require__(3)(__webpack_require__(1),__webpack_require__(2));
 
 
 	/**
@@ -100,13 +100,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var React = __webpack_require__(1);
 
-	var DataSource = __webpack_require__(3);
-	var Pager = __webpack_require__(4);
+	var DataSource = __webpack_require__(4);
+	var Pager = __webpack_require__(5);
 
-	var RDTRow = __webpack_require__(5);
-	var RDTColumn = __webpack_require__(6);
-	var RDTBody = __webpack_require__(7);
-	var Paginator = __webpack_require__(8);
+	var RDTRow = __webpack_require__(6);
+	var RDTColumn = __webpack_require__(7);
+	var RDTBody = __webpack_require__(8);
+	var Paginator = __webpack_require__(9);
 
 
 
@@ -255,6 +255,80 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/*globals require,module,React */
+	"use strict";
+
+	/**
+	 * React instance creation is a bit noisy. Use this on react a library such
+	 * that its more direct to the point when creating new instance. E.g.
+	 *
+	   React.render(React.createElement(ViewPager,{ views : ["page11","page22","page33"], visible:"page11"}),
+	            document.getElementById("viewpager-container2"));
+	 * 
+	 * to something like
+	 *
+	 * ViewPager.render({ views : ["page1","page2","page3"], visible:"page1"},"viewpager-container");
+	 * or
+	 * ViewPager.render("viewpager-container");
+	 * 
+	 * If your are exposing a library then :
+	 * 
+	 * var renderWrapper = require("react-render");
+	 * var MyReactComponent = React.createClass... 
+	 * 
+	 * module.exports = renderWrapper(React,MyReactComponent)
+	 *
+	 */
+
+	/**
+	 * 
+	 * Shortcut to React.createElement(cls,option) 
+	 *
+	 */
+	var elWrapper = function(React,ReactClass,option) {
+	    return React.createElement(ReactClass,option);
+	};
+	    
+	var renderWrapper = function(React,ReactClass,options,el) {
+	    
+	    var ouroption = {};
+	    //if he passed an html element or a string on the first argument
+	    //then we assume he wants no options
+	    var ourEl = null;
+	    
+	    //check if its actually an element
+	    if ( ( options.tagName && options.nodeName && (typeof options.nodeType === 'number') ) 
+	        || ( typeof options === 'string' ) ) {
+	        ourEl = options;
+	    } else {
+	        ouroption = options;
+	        ourEl = ( typeof el === 'string') ? document.getElementById(el) : el;
+	    }
+
+	    return React.render(elWrapper(React,ReactClass,ouroption), ourEl);
+	};
+
+	var RenderWrapper = function(React,ReactClass) {
+
+	    return {
+	        cls : ReactClass,
+	        el : function(options) {
+	            return elWrapper(React,ReactClass,options);
+	        },
+	        render : function(options,el) {
+	            return renderWrapper(React,ReactClass,options,el)
+	        }
+	    }
+
+	};
+
+	module.exports = RenderWrapper;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/** @jsx React.DOM */
 	/*globals require,module */
 	/* jshint -W097, esnext: true */
@@ -395,9 +469,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var result = [];
 	    var counter = 0;
-	    console.log(pageState.endIdx);
 	    for ( var i = pageState.startIdx; i < pageState.endIdx; i++ ) {
-
 	        result.push(mapper(this.records[i],counter++,i));
 	    }
 
@@ -423,7 +495,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = DataSource;
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -500,7 +572,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Pager;
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -555,7 +627,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTRow;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -657,7 +729,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -666,7 +738,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	"use strict";
 
 	var React = __webpack_require__(1);
-	var RDTRow = __webpack_require__(5);
+	var RDTRow = __webpack_require__(6);
 
 	/**
 	 * React Component for Body
@@ -710,7 +782,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = RDTBody;
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */
@@ -738,27 +810,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.props.pageChangedListener(page);
 	        }
 	    },
+	    
+	    /** TODO: fix the hard coding..*/
+	        
+	    fastForward : function() {
+	        this.props.pageChangedListener( ( (this.props.pagerState.page + 2) <=0 ) ? this.props.pagerState.page.totalPage : this.props.pagerState.page + 2 );
+	            
+	    },
+	    //fast backward?
+	    fastBackward : function() {
+	        //we need to fix this
+	        this.props.pageChangedListener( ( (this.props.pagerState.page - 2) <=0 ) ? 1 : this.props.pagerState.page - 2 );
+
+	    },
 	    /**
 	     * If rendered is called it means we have a paginator
 	     *
 	     * @returns {XML}
 	     */
 	    render: function() {
+	        //ps.page is the page we want to show
 
 	        var ps = this.props.pagerState;
 	        var visiblePager = 3;
-	        var startPage = ps.page;
+	        var startPage = 1;
+	        var offset = 1;
+	        
+	        if ( ps.page > startPage ) {
+	            if ( ( ps.page - offset ) > offset  ) {
+	                startPage = ps.page  - offset;
+	            }
+	            if ( ps.page === ps.totalPage ) {
+	                startPage = ps.page - ( visiblePager - 1) ;
+	            }
+	        }
+
+	        var maxPage =  (( startPage + (visiblePager ) ) <= ps.totalPage ) ?  startPage + visiblePager : ps.totalPage + 1;
+
 	        var lastFFClass = "";
 	        var startFFClass = "";
-	        
-	        //FIXME please!
+
+
 	        var generatePager = function() {
 	            
 	            var pagerComponents = [];
 
 	            pagerComponents.push(
 	                /*jshint ignore:start */
-	                (React.createElement("li", {className: startFFClass}, 
+	                (React.createElement("li", {className: startFFClass, onClick: this.fastBackward}, 
 	                    React.createElement("span", null, 
 	                        React.createElement("span", null, "«")
 	                    )
@@ -766,7 +865,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                /*jshint ignore:end */
 	            );
 	            
-	            for ( var i=startPage; i < (startPage+visiblePager); i++ ) {
+	            for ( var i=startPage; i <  maxPage ; i++ ) {
 	                var cls = "";
 	                if ( i === ps.page ) {
 	                    cls="active";
@@ -780,7 +879,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            
 	            pagerComponents.push(
 	                /*jshint ignore:start */
-	                (React.createElement("li", {className: lastFFClass}, 
+	                (React.createElement("li", {className: lastFFClass, onClick: this.fastForward}, 
 	                    React.createElement("span", null, 
 	                        React.createElement("span", null, "»")
 	                    )
@@ -789,7 +888,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            );
 	            return pagerComponents;
 	            
-	        };
+	        }.bind(this);
 	        
 	        
 	        
@@ -810,80 +909,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	module.exports = Paginator;
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*globals require,module,React */
-	"use strict";
-
-	/**
-	 * React instance creation is a bit noisy. Use this on react a library such
-	 * that its more direct to the point when creating new instance. E.g.
-	 *
-	   React.render(React.createElement(ViewPager,{ views : ["page11","page22","page33"], visible:"page11"}),
-	            document.getElementById("viewpager-container2"));
-	 * 
-	 * to something like
-	 *
-	 * ViewPager.render({ views : ["page1","page2","page3"], visible:"page1"},"viewpager-container");
-	 * or
-	 * ViewPager.render("viewpager-container");
-	 * 
-	 * If your are exposing a library then :
-	 * 
-	 * var renderWrapper = require("react-render");
-	 * var MyReactComponent = React.createClass... 
-	 * 
-	 * module.exports = renderWrapper(React,MyReactComponent)
-	 *
-	 */
-
-	/**
-	 * 
-	 * Shortcut to React.createElement(cls,option) 
-	 *
-	 */
-	var elWrapper = function(React,ReactClass,option) {
-	    return React.createElement(ReactClass,option);
-	};
-	    
-	var renderWrapper = function(React,ReactClass,options,el) {
-	    
-	    var ouroption = {};
-	    //if he passed an html element or a string on the first argument
-	    //then we assume he wants no options
-	    var ourEl = null;
-	    
-	    //check if its actually an element
-	    if ( ( options.tagName && options.nodeName && (typeof options.nodeType === 'number') ) 
-	        || ( typeof options === 'string' ) ) {
-	        ourEl = options;
-	    } else {
-	        ouroption = options;
-	        ourEl = ( typeof el === 'string') ? document.getElementById(el) : el;
-	    }
-
-	    return React.render(elWrapper(React,ReactClass,ouroption), ourEl);
-	};
-
-	var RenderWrapper = function(React,ReactClass) {
-
-	    return {
-	        cls : ReactClass,
-	        el : function(options) {
-	            return elWrapper(React,ReactClass,options);
-	        },
-	        render : function(options,el) {
-	            return renderWrapper(React,ReactClass,options,el)
-	        }
-	    }
-
-	};
-
-	module.exports = RenderWrapper;
-
 
 /***/ },
 /* 10 */
@@ -1179,7 +1204,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            try {
 	                return renderer.call(renderer,value,formattedValue,cellDecoration,property,record,React);
 	            } catch ( e ) {
-	                console.log(e);
 	                return null;
 	            } 
 	        }

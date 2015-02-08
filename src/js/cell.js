@@ -159,7 +159,6 @@ var RDTCell = React.createClass({
             try {
                 return renderer.call(renderer,value,formattedValue,cellDecoration,property,record,React);
             } catch ( e ) {
-                console.log(e);
                 return null;
             } 
         }
