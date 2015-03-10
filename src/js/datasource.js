@@ -69,6 +69,8 @@ var DataSource = function(records,config) {
 };
 
 
+DataSource.EVENTS = EVENTS;
+
 DataSource.prototype = EventEmitter.prototype;
 DataSource.prototype.constructor = DataSource;
 
@@ -157,7 +159,7 @@ DataSource.prototype.updateRecord = function(recordIdx,property,newValue) {
     var record = this.records[recordIdx];
     utils.updateRecord(property,newValue,this.propertyConfigMap[property],record);
     //FIXME, we should get current value and pass as old value
-    this.emit(EVENTS.RECORD_UPDATED,record,recordIdx,property,newValue);
+    this.emit(EVENTS.RECORD_UPDATED,recordIdx,record,property,newValue);
 };
 
 

@@ -74,37 +74,31 @@ var RDT = React.createClass({
         }
     },
 
-    /* REMOVING FOR NOW
-    add : function(record) {
-        this.ds.add(record);
-        var pagerState = null;
-        if ( this.pager ) {
-            pagerState = this.pager.state();
+    onDsRecordUpdated : function(recordIdx,record,property,newValue) {
+        if ( this.props.onDsRecordUpdated ) {
+            this.props.onDsRecordUpdated(recordIdx,record,property,newValue);
         }
-
-        this.setState({ pager : pagerState });
     },
-    */
-    onDsChangeEvent : function() {
-        if ( this.props.onChange ) {
-            this.props.onChange();
+
+    onDsRecordAdded : function(record) {
+        if ( this.props.onDsRecordAdded ) {
+            this.props.onDsRecordAdded(record);
         }
     },
     
     _createStateFromProps : function(props) {
 
         var state = {};
-        
-        if ( props.data  ) {
-            state.datasource = new DataSource(props.data,props.config);
-        }
-        
+
+        state.datasource = new DataSource(props.data || [],props.config);
+        state.datasource.on(DataSource.EVENTS.RECORD_ADDED,this.onDsRecordAdded);
+        state.datasource.on(DataSource.EVENTS.RECORD_UPDATED,this.onDsRecordUpdated);
         
         if (props.config.pager  ) {
             state.pager = new Pager(1, props.config.pager.rowsPerPage, state.datasource);
         }
 
-        return  state; //{ datasource: datasource, pager : this.state.pager, pagerState: this.pager.state() };
+        return  state;
     },
 
     /**
