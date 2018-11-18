@@ -23,24 +23,24 @@ const mountPoint = document.getElementById('app')
 
 
 const Container = styled.div`
-    padding: 4px;
-    width: 420px;
-    height: 220px;
+    padding: 18px 122px;
+    width: 100%;
+    height: 420px;
 `
 
 interface IRow {
-    name: { firstname: string, lastname: string }
+    name: { first: string, last: string }
 }
 
 const firstnameValue = (arg: IValueArg<IRow>) => {
-    return arg.data.name.firstname
+    return arg.data.name.first
 }
 
 const lastnameValue = (arg: IValueArg<IRow>) => {
-    return arg.data.name.lastname
+    return arg.data.name.last
 }
 
-const Index: React.SFC = (props) => {
+const Index: React.SFC = () => {
 
     return (
         <>
@@ -55,16 +55,18 @@ const Index: React.SFC = (props) => {
                         <Column
                             id='email'
                             title='Email'
+                            width={210}
+
                         />
                         <Column
                             id='firstname'
                             title='Firstname'
-                            value={firstnameValue}
+                            valueProvider={firstnameValue}
                         />
                         <Column
                             id='lastname'
                             title='Lastname'
-                            value={lastnameValue}
+                            valueProvider={lastnameValue}
                         />
                     </Columns>
                 </DataTable>

@@ -1,16 +1,9 @@
 
 import * as React from 'react'
+import { IColumnConfig } from './types/IColumnConfig';
 
-export interface IValueArg<D = {}> {
-    data: D
-    columnProp: IColumnProp
-}
+export interface IColumnProp<D = {}> extends IColumnConfig<D> {}
 
-export interface IColumnProp<D = {}> {
-    id: string
-    title: string
-    value?: (arg: IValueArg<D>) => React.ReactNode
-}
 
 export interface IColumnsProp {
     children: React.ReactElement<IColumnProp> | Array<React.ReactElement<IColumnProp>>

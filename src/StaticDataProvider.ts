@@ -1,7 +1,7 @@
 import { IDataProvider } from './types/IDataProvider';
 
 const createStaticDataProvider = <D = {}>(data: D[]): IDataProvider<D> => {
-    
+
     function  slice(offset: number, length: number) {
         return Promise.resolve(data)
     }

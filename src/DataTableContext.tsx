@@ -2,22 +2,25 @@
 import * as React from 'react'
 
 import { IColumnConfig } from './types/IColumnConfig';
-import { IDataProvider } from './types/IDataProvider'
+// import { IDataProvider } from './types/IDataProvider'
 
 export interface IDataTableContext<D = {}> {
-    dataProvider: IDataProvider<D>
+    data: D[]
     columnConfigs: IColumnConfig[]
+    viewport: { width: number, height: number }
 }
 
-const noopDataProvider: IDataProvider = {
-    length: 0,
-    slice(offset: number, length: number ) {
-        return Promise.resolve([])
-    }
-}
+// const noopDataProvider: IDataProvider = {
+//     length: 0,
+//     slice(offset: number, length: number ) {
+//         return Promise.resolve([])
+//     }
+// }
 
 const DEFAULT_CONFIG = {
-    columnConfigs: [],    
-    dataProvider: noopDataProvider
+    columnConfigs: [],
+    data: [],
+    viewport: { width: 0, height: 0 }
 }
-export const DatatableContext = React.createContext<IDataTableContext>(DEFAULT_CONFIG)
+const { createContext } = React
+export const DatatableContext = createContext<IDataTableContext>(DEFAULT_CONFIG)

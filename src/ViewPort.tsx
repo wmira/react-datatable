@@ -1,16 +1,11 @@
 import * as React from 'react'
 
-import { FixedSizeGrid, GridChildComponentProps } from 'react-window';
+import Measure from 'react-measure'
 import styled from 'styled-components'
 import { DatatableContext } from './DataTableContext';
+import { TableBody } from './TableBody';
 import { TableHeader } from './TableHeader';
-import { IColumnConfig } from './types/IColumnConfig';
-import { IContextProp } from './types/IContextProp';
 
-const Container = styled.div`
-    width: 100%;
-    height: 100%;
-`
 
 
 export class ViewPort extends React.PureComponent {
@@ -20,9 +15,7 @@ export class ViewPort extends React.PureComponent {
     public render() {
 
         return (
-            <Container>
-               <TableHeader context={this.context}/>
-            </Container>
+
         )
     }
 }
