@@ -2,10 +2,37 @@
   "name": "react-datatable",
   "version": "0.0.31",
   "description": "Data Table written in React view framework",
-  "dependencies": {},
+  "dependencies": {
+    "react-containers": "^15.3.1",
+    "react-dom": "^16.6.3",
+    "react-measure": "^2.1.3",
+    "react-window": "^1.2.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.6",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/preset-env": "^7.1.6",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/preset-typescript": "^7.1.0",
+    "@types/react": "^16.7.6",
+    "@types/react-dom": "^16.0.9",
+    "@types/react-window": "^1.1.0",
+    "@types/styled-components": "^4.1.0",
+    "babel-loader": "^8.0.4",
+    "babel-plugin-styled-components": "^1.8.0",
+    "react": "^16.6.3",
+    "styled-components": "^4.1.1",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.16.0",
+    "tslint-react": "^3.6.0",
+    "typescript": "^3.1.6",
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
+  },
   "author": "Warren Mira",
   "license": "MIT",
-  "main": "dist/js/react-datatable.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/wmira/react-datatable"
@@ -15,31 +42,13 @@
   },
   "homepage": "https://github.com/wmira/react-datatable",
   "scripts": {
-    "build": "webpack src/js/index.js dist/js/react-datatable.js",
-    "build-min": "NODE_ENV=production COMPRESS=1 webpack src/js/index.js dist/js/react-datatable.min.js",
-    "watch": "webpack src/js/index.js dist/js/react-datatable.js --watch",
-    "test": "jest"
+    "playground": "webpack-dev-server --mode development src/playground/index.tsx  ",
+    "build": "webpack src/js/index.js dist/js/react-datatable.js"
   },
   "keywords": [
     "react",
     "react-component",
     "datatable",
     "datagrid"
-  ],
-  "devDependencies": {
-    "bluebird": "^2.6.2",
-    "jest-cli": "^0.2.1",
-    "jsx-loader": "^0.12.2",
-    "mocha": "^2.1.0",
-    "react": "^0.12.2",
-    "react-render-wrapper": "^1.0.2",
-    "react-tools": "^0.12.2",
-    "webpack": "^1.4.15"
-  },
-  "jest": {
-    "scriptPreprocessor": "<rootDir>/__tests__/preprocessor.js",
-    "unmockedModulePathPatterns": [
-      "<rootDir>/node_modules/react"
-    ]
-  }
+  ]
 }
